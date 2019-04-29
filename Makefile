@@ -1,5 +1,13 @@
 all:
-	curl -R -O http://www.lua.org/ftp/lua-5.3.5.tar.gz
-	tar zxf lua-5.3.5.tar.gz
-	cd lua-5.3.5
-	lua teste.lua
+        @echo ">>install rpm"
+        sudo apt install rpm
+        @echo ">>install lua"
+        sudo apt install lua5.
+        sudo apt-get install liblua5.2-dev
+        @echo ">>Lua installed
+        @echo ">>install luarocks"
+        sudo apt install luarocks
+        @echo ">>install lpeg"
+        sudo luarocks install lpeg
+        lua ParserLpeg.lua
+
