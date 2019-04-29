@@ -1,6 +1,4 @@
 all:
-        @echo ">>install rpm"
-        sudo apt install rpm
         @echo ">>install lua"
         sudo apt install lua5.
         sudo apt-get install liblua5.2-dev
