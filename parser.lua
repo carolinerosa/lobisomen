@@ -12,22 +12,37 @@ local parser = {}
 
 
 --pegarah o retorno do lexit, e organizarah em uma table feita de
-function organizeLex(lex)
+function organizeLex(lexo)
 	organized = {}
-	for lexstr,cat in lexit.lex("5 * ( 3 + 2 )") do
+	for lexstr,cat in lexit.lex(lexo) do
 		temp = {lexstr,cat}  --mais passos q o necessario, mas funciono assim entao nao vo mexer
 		table.insert(organized,temp)
 	end
 
 	return organized
+end
+
+function treatDig(lexTable)
 
 end
 
-function parser.parse(lex)
+function recursiveParse(fatherNode,lexTable)-- percorre 
+	for i=1,#lexTable,1  do
+		if lexTable[i][2] == 4 then --sefor um digito
+			if (i+2) <= #lexTable then -- ou seja, da pra ser <exp><op><exp>
+					
+			end 
 
-	lexTable = organizeLex(lex)
+		elseif 
+	end
+end
+
+function parser.parse()
+
+	lexTable = organizeLex(lexo)
 
 	treeBase = node("<exp>") --vamos escrever assim mesmo ? Tipo <dig> , ou quer algo mais facil tipo algo tipo 1 = exp , 2 = dig ?
+
 
 	--Agora podemos comecar as comparacoes e fazer arvores
 
