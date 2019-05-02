@@ -2,9 +2,14 @@
 
 Referencia : https://github.com/ChristianoBraga/PiFramework/blob/master/doc/pi-in-a-nutshell.md
 
-Expressoes aritimeticas
+Tipos Basicos 
 
-NUM numero 			
+NUM numero 	
+BOO booleana
+ID 	Identificador
+
+Expressoes aritimeticas
+		
 SUM soma 			
 SUB subtracao
 MUL multiplicacao
@@ -16,19 +21,17 @@ GE  maior ou igual
 
 Expressoes booleanas 
 
-BOO booleana
 AND e
 OR  ou
 NOT nao
 
 Comandos
 
+LOOP
+COND
 ASSING
 
-
-
 ]]
-
 
 
 function tLen(T) --Prasaber o tamanho da tabela | serio nao use  # nao eh deterministico
@@ -50,18 +53,22 @@ function push(pile,item)
 	table.insert(pile,item) --como nao tem valor coloca no final
 end
 
+function getLocalization(env,stor) --por enquanto sempre coloca no final do stor 
+	return tLen(stor)
+end
+
 function handle_NUM(item,cPile,vPile,env,stor,result)
 	push(vPile,item)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
 function handle_SUM(item,cPile,vPile,env,stor,result)
-	OP = "#SUM"
+	OP ="#SUM"
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
-	push(cPile,valueA)
 	push(cPile,valueB)
+	push(cPile,valueA)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
@@ -286,9 +293,109 @@ function handle_H_NOT(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
+function handle_ID(item,cPile,vPile,env,stor,result)
+
+end
+
+function handle_LOOP(item,cPile,vPile,env,stor,result)
+	OP="#LOOP"
+	booExp= getFirst(item)
+
+	push(vPile,item) 		--vai no vPile mesmo
+
+	push(cPile,OP)
+	push(cPile,booExp)
+	automaton.rec(cPile,vPile,env,stor,result)
+
+end
+
+function handle_H_LOOP(item,cPile,vPile,env,stor,result)
+	booValue= node.value(pop(vPile))
+	loop = pop(vPile)
+	if booValue then
+		command = getSecond(loop)
+		push(cPile,loop)
+		push(cPile,command)
+	end
+end
+
+function handle_COND(item,cPile,vPile,env,stor,result)
+	OP="#COND"
+	booExp= getFirst(item)
+
+	push(vPile,item) 
+
+	push(cPile,OP)
+	push(cPile,booExp)
+
+	automaton.rec(cPile,vPile,env,stor,result)
+end
+
+function handle_H_COND(item,cPile,vPile,env,stor,result)
+	booValue= node.value(pop(vPile))
+	cond = pop(vPile)
+	if booValue then --Pega o comando 1 ou o 2 
+		command = getSecond(loop)
+		push(cPile,command)
+	else
+		command = getThird(loop)
+		push(cPile,command)
+	end
+end
+
+function handle_ID(item,cPile,vPile,env,stor,result)
+	idValue = node.value(item)
+	expBindded = stor[env[idValue]] 
+	push(vPile,expBindded)
+	automaton.rec(cPile,vPile,env,stor,result)
+end
+
+function handle_ASSING(item,cPile,vPile,env,stor,result)
+	OP = "#ASSING"
+	id = getFirst(item)
+	exp = getSecond(item)
+
+	push(vPile,id)
+
+	push(cPile,OP) 		
+	push(cPile,exp)
+
+	automaton.rec(cPile,vPile,env,stor,result)
+end
+
+function handle_H_ASSING(item,cPile,vPile,env,stor,result)
+	expValue = pop(vPile) 
+	idValue = node.value(pop(vPile))
+	loc = getLocalization(env,stor) 
+	env[idValue] = loc 
+	stor[loc] = expValue
+	automaton.rec(cPile,vPile,env,stor,result)
+end
+
+function handle_CSEQ(item,cPile,vPile,env,stor,result)
+	command1 = getFirst(item)
+	command2 = getSecond(item)
+	push(cPile,command2)
+	push(cPile,command1)
+	automaton.rec(cPile,vPile,env,stor,result)
+end
+
+--[[
+Obs1: Ver expressoes que ordem queremos ValueA e ValueB  ou B A na pilha
+
+Obs2: Ver se ja colocamos os valores em si na pilha de valores ou deixamos  encapsulado pelo NUMB, BOO e ID 
+(considerando que talvez o BOO tenha qeu se manter no BOO(true) e BOO(false) ,para nao acharem que eh ID) 
+
+Obs3: Talvez tenha uma funcao chamada call que  chamaria um ID ,mas se ID fizer isso entao temos que mudar handle_ID e handle_ASSING
+
+
+]]
+
 handlers =
     {
         ["NUM"]=handle_NUM,
+		["BOO"]=handle_BOO,
+		["ID"]=handle_ID,
         ["SUM"]=handle_SUM,
         ["#SUM"]=handle_H_SUM,
         ["SUB"]=handle_SUB,
@@ -297,7 +404,6 @@ handlers =
         ["#MUL"]=handle_H_MUL,
         ["DIV"]=handle_DIV,
         ["#DIV"]=handle_H_DIV,
-        ["BOO"]=handle_BOO,
         ["LT"]=handle_LT,
         ["#LT"]=handle_H_LT,
         ["LE"]=handle_LE,
@@ -312,6 +418,13 @@ handlers =
         ["#OR"]=handle_H_OR,
         ["NOT"]=handle_NOT,
         ["#NOT"]=handle_H_NOT,
+        ["LOOP"]=handle_LOOP,
+        ["#LOOP"]=handle_H_LOOP,
+        ["COND"]=handle_COND,
+        ["#COND"]=handle_H_COND,
+        ["ASSING"]=handle_ASSING,
+        ["#ASSING"]=handle_H_ASSING,
+        ["CSEQ"]=handle_CSEQ
     }
 
 
@@ -329,7 +442,6 @@ function automaton.rec(cPile,vPile,env,stor,result)
 
 	handlers[stat](item,cPile,vPile,env,stor,result)
 
-
 end
 
 function automaton.auto(tree)
@@ -340,8 +452,6 @@ function automaton.auto(tree)
 	sto={}   --storage
 
 	result=0 --apenas iniciando variavel de retorno final
-
-
 
 	push(cPile,tree)
 
