@@ -19,7 +19,7 @@ local calculator = lpeg.P({
   "input",
   input =lpeg.V("exp") * -1,
   exp =  lpeg.V("term") + ( lpeg.V("factor") )  + integer,
-  term = node((spc * "(" * (lpeg.V("factor") + integer) * addsub * lpeg.V("exp") * ")" * spc) + (lpeg.V("factor") + integer) * addsub * lpeg.V("exp"))
+  term = node((spc * "(" * (lpeg.V("factor") + integer) * addsub * lpeg.V("exp") * ")" * spc) + ((lpeg.V("factor") + integer) * addsub * lpeg.V("exp"))),
   factor = node(( spc * "(" * integer * muldiv * lpeg.V("exp")* ")" * spc) +( integer * muldiv * lpeg.V("exp") ) )
 })
 
