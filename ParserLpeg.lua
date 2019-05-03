@@ -23,17 +23,16 @@ local calculator = lpeg.P({
   factor = node(( spc * "(" * integer * muldiv * (lpeg.V("factor") + integer) * ")" * spc) +( integer * muldiv * (lpeg.V("factor")  + integer)) )
 })
 
-
-for i,v in ipairs(calculator:match("3 + (2 * 5)")) do 
-if (type(v) == 'table') then 
-for t,u in ipairs(v) do
-print(t,u) 
+function generator(s)
+    for i,v in ipairs(calculator:match(s) do 
+        if (type(v) == 'table') then 
+            for t,u in ipairs(v) do
+                print(t,u) 
+            end
+        else
+            print(i,v)
+        end
+    end
 end
-else
-print(i,v)
-end
- end
 
-
-
-
+generator("3 * 5 + 12")
