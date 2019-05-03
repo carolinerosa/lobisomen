@@ -18,9 +18,9 @@ end
 local calculator = lpeg.P({
   "input",
   input =lpeg.V("exp") * -1,
-  exp =  lpeg.V("term")   +(  lpeg.V("factor") ) + integer,
-  term = node((spc * "(" * (lpeg.V("factor") + integer) * addsub * lpeg.V("exp") * ")" * spc) + (lpeg.V("factor") + integer) * addsub * lpeg.V("exp") ),
-  factor = node(( spc * "(" * integer * muldiv * (lpeg.V("factor") + integer) * ")" * spc) +( integer * muldiv * (lpeg.V("factor")  + integer)) )
+  exp =  lpeg.V("term") + ( lpeg.V("factor") )  + integer,
+  term = node((spc * "(" * (lpeg.V("factor") + integer) * addsub * lpeg.V("exp") * ")" * spc) + (lpeg.V("factor") + integer) * addsub * lpeg.V("exp"$
+  factor = node(( spc * "(" * integer * muldiv * lpeg.V("exp")* ")" * spc) +( integer * muldiv * lpeg.V("exp") ) )
 })
 
 function generator(s)
@@ -35,4 +35,10 @@ function generator(s)
     end
 end
 
-generator("3 * 5 + 12")
+
+expressao = io.stdin:read'*l'
+while (expressao~='exit') do
+    print("Expressão: ",expressao)
+    generator(expressao)
+    expressao = io.stdin:read'*l'
+end
