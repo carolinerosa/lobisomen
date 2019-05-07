@@ -2,34 +2,39 @@
 
 Referencia : https://github.com/ChristianoBraga/PiFramework/blob/master/doc/pi-in-a-nutshell.md
 
+Formatacao esperada : 5*(3+2) -> {MUL  {NUM {5}} {SUM {NUM{2}} {NUM{3}} } }
+
+
+
+
 Tipos Basicos 
 
-NUM numero 	
-BOO booleana
-ID 	Identificador
+NUM numero 					{"NUM",<numero>}  | Ex: 3  => {"NUM",3}  | Tanto faz o  tipo do 3,int,float,double,, soh algo que  da pra fazer conta
+BOO booleanas 				{"BOO", "TRUE"}  OU {"BOO","FALSE"} , usei Strings em vezdesoh  true  e falsee ja tratei, soh pra tipo nao ter erro de tipo dizer que TRUE e FALSE  sao palavras reservada
+ID 	Identificador			{"ID",<nomedo id>} | Ex: bola => {"ID","bola"}
 
 Expressoes aritimeticas
 		
-SUM soma 			
-SUB subtracao
-MUL multiplicacao
-DIV divisao
-LT  menor que 
-LE	menor ou igual
-GT 	maior que
-GE  maior ou igual
+SUM soma 					{"SUM", <numero A ou expressao A> , <numero B ou expressao B>} 	| Ex :  2 + 4 ==> {"SUM", {"NUM",2} , {"NUM",4}}     
+SUB subtracao				{"SUB", <numero A ou expressao A> , <numero B ou expressao B>}	| Ex :  4 - 1 ==> {"SUB", {"NUM",4} , {"NUM",1}}  
+MUL multiplicacao			{"MUL", <numero A ou expressao A> , <numero B ou expressao B>}	| Ex :  9 * 7 ==> {"MUL", {"NUM",9} , {"NUM",7}}  
+DIV divisao					{"DIV", <numero A ou expressao A> , <numero B ou expressao B>}	| Ex :  3 / 6 ==> {"DIV", {"NUM",3} , {"NUM",6}}  
+LT  menor que 				{"LT", <numero A ou expressao A> , <numero B ou expressao B>}	| Nesse e nos 3 abaixo nao estamos tratando caso  nao seja um numero,o prof falo disso de tipo tratar pra nao deixar entrar aqui
+LE	menor ou igual			{"LE", <numero A ou expressao A> , <numero B ou expressao B>}	| e deixar rolar sabe ? Por enquanto nao ligarmos pra qual "tipo" de info ele quer comparar
+GT 	maior que 				{"GT", <numero A ou expressao A> , <numero B ou expressao B>}	|
+GE  maior ou igual 			{"GE", <numero A ou expressao A> , <numero B ou expressao B>}	|
 
 Expressoes booleanas 
 
-AND e
-OR  ou
-NOT nao
-
+AND e 						{"AND", <boolean A ou expressaoBooleana A>, <boolean B ou expressaoBooleana B>} | Ex : TRUE AND 2 > 3  ==> {"AND",{"BOO","TRUE"},{"GT",{"NUM",2},{"NUM",3}}}
+OR  ou 						{"OR", <boolean A ou expressaoBooleana A>, <boolean B ou expressaoBooleana B>} 	|
+NOT nao 					{"NOT", <boolean A ou expressaoBooleana A>} | Ex: NOT 5 <= 6    ==>  {"NOT", {"LE",5,6}} | acho que tanto faz ficar NOT(5<=6) ou NOT 5<=6, vamos fazer sem parentezes mesmo,mas tanto faz devolve a mesma coisa
+ 
 Comandos
 
-LOOP
-COND
-ASSING
+LOOP 						{"LOOP",<expressaoBooleana>,<expressaoBooleana ou aritmetica ou comando>} |Ex: LOOP TRUE 1 + 1 ==> {"LOOP",{"BOO","TRUE"}, {"SUM", 1 , 1} } | EXMaisDificil: LOOP bola > 4 bola + 1  ou LOOP (bola > 4) bola + 1  ==> {"LOOP", {"GT" , {"ID", "bola"} , {"NUM", 4} } , {"SUM", {"ID","bola"}, {"NUM", 1} } } 
+COND  						{"COND",<expressaoBooleana>,<expressaoBooleana ou aritmetica ou comando A> , <expressaoBooleana ou aritmetica ou comando B>} | Ex: COND 0 < 1 5+7 3*4 ==> << 0<1=Exp  5+7=A, 3*4=B >>  {"COND", {Exp} , {A} , {B}}
+ASSING 						{"ASSING",<ID>,<expressaoAritmetica ou Booleana ou Num ou Boo>} | Ex: bola = 3  ou bola := 3   (como preferir, da no mesmo pro meu lado)  ==> {"ASSING", {"ID", "bola"}, {"NUM",3} } 
 
 ]]
 
@@ -57,13 +62,33 @@ function getLocalization(env,stor) --por enquanto sempre coloca no final do stor
 	return tLen(stor)
 end
 
-function handle_NUM(item,cPile,vPile,env,stor,result)
+function getValue(item)
+
+end
+
+function getFirst(item)
+
+end
+
+function getSecond(item)
+
+end
+
+function getThird(item)
+
+end
+
+function makeNode(item)
+
+end
+
+function handle_NUM(item,cPile,vPile,env,stor)
 	push(vPile,item)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_SUM(item,cPile,vPile,env,stor,result)
-	OP ="#SUM"
+function handle_SUM(item,cPile,vPile,env,stor)
+	OP = {"#SUM"}
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
@@ -72,16 +97,16 @@ function handle_SUM(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_H_SUM(item,cPile,vPile,env,stor,result)--#SUM , soma dos dois primeiros itens em vPile
-	valueA = node.value(pop(vPile))
-	valueB = node.value(pop(vPile))
+function handle_H_SUM(item,cPile,vPile,env,stor)--#SUM , soma dos dois primeiros itens em vPile
+	valueA = getValue(pop(vPile))
+	valueB = getValue(pop(vPile))
 	result = valueA + valueB
 	push(vPile,makeNode(result,"NUM"))
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_SUB(item,cPile,vPile,env,stor,result)
-	OP = "#SUB"
+function handle_SUB(item,cPile,vPile,env,stor)
+	OP = {"#SUB"}
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
@@ -90,16 +115,16 @@ function handle_SUB(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_H_SUB(item,cPile,vPile,env,stor,result)
-	valueA = node.value(pop(vPile))
-	valueB = node.value(pop(vPile))
+function handle_H_SUB(item,cPile,vPile,env,stor)
+	valueA = getValue(pop(vPile))
+	valueB = getValue(pop(vPile))
 	result = valueA - valueB
 	push(vPile,makeNode(result,"NUM"))
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_MUL(item,cPile,vPile,env,stor,result)
-	OP = "#MUL"
+function handle_MUL(item,cPile,vPile,env,stor)
+	OP = {"#MUL"}
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
@@ -108,16 +133,16 @@ function handle_MUL(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_H_MUL(item,cPile,vPile,env,stor,result)
-	valueA = node.value(pop(vPile))
-	valueB = node.value(pop(vPile))
+function handle_H_MUL(item,cPile,vPile,env,stor)
+	valueA = getValue(pop(vPile))
+	valueB = getValue(pop(vPile))
 	result = valueA * valueB
 	push(vPile,makeNode(result,"NUM"))
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_DIV(item,cPile,vPile,env,stor,result)
-	OP = "#DIV"
+function handle_DIV(item,cPile,vPile,env,stor)
+	OP = {"#DIV"}
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
@@ -126,16 +151,16 @@ function handle_DIV(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_H_DIV(item,cPile,vPile,env,stor,result)
-	valueA = node.value(pop(vPile))
-	valueB = node.value(pop(vPile))
+function handle_H_DIV(item,cPile,vPile,env,stor)
+	valueA = getValue(pop(vPile))
+	valueB = getValue(pop(vPile))
 	result = valueA / valueB
 	push(vPile,makeNode(result,"NUM"))
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_LT(item,cPile,vPile,env,stor,result)
-	OP = "#LT"
+function handle_LT(item,cPile,vPile,env,stor)
+	OP = {"#LT"}
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
@@ -144,9 +169,9 @@ function handle_LT(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_H_LT(item,cPile,vPile,env,stor,result)
-	valueA = node.value(pop(vPile))
-	valueB = node.value(pop(vPile))
+function handle_H_LT(item,cPile,vPile,env,stor)
+	valueA = getValue(pop(vPile))
+	valueB = getValue(pop(vPile))
 	if valueA < valueB then 
 		result = "TRUE"
 	else
@@ -156,8 +181,8 @@ function handle_H_LT(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_LE(item,cPile,vPile,env,stor,result)
-	OP = "#LE"
+function handle_LE(item,cPile,vPile,env,stor)
+	OP = {"#LE"}
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
@@ -166,9 +191,9 @@ function handle_LE(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_H_LE(item,cPile,vPile,env,stor,result)
-	valueA = node.value(pop(vPile))
-	valueB = node.value(pop(vPile))
+function handle_H_LE(item,cPile,vPile,env,stor)
+	valueA = getValue(pop(vPile))
+	valueB = getValue(pop(vPile))
 	if valueA <= valueB then 
 		result = "TRUE"
 	else
@@ -178,8 +203,8 @@ function handle_H_LE(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_GT(item,cPile,vPile,env,stor,result)
-	OP = "#GT"
+function handle_GT(item,cPile,vPile,env,stor)
+	OP = {"#GT"}
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
@@ -188,9 +213,9 @@ function handle_GT(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_H_GT(item,cPile,vPile,env,stor,result)
-	valueA = node.value(pop(vPile))
-	valueB = node.value(pop(vPile))
+function handle_H_GT(item,cPile,vPile,env,stor)
+	valueA = getValue(pop(vPile))
+	valueB = getValue(pop(vPile))
 	if valueA > valueB then 
 		result = "TRUE"
 	else
@@ -200,8 +225,8 @@ function handle_H_GT(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_GE(item,cPile,vPile,env,stor,result)
-	OP = "#GE"
+function handle_GE(item,cPile,vPile,env,stor)
+	OP = {"#GE"}
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
@@ -210,9 +235,9 @@ function handle_GE(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_H_GE(item,cPile,vPile,env,stor,result)
-	valueA = node.value(pop(vPile))
-	valueB = node.value(pop(vPile))
+function handle_H_GE(item,cPile,vPile,env,stor)
+	valueA = getValue(pop(vPile))
+	valueB = getValue(pop(vPile))
 	if valueA >= valueB then 
 		result = "TRUE"
 	else
@@ -222,13 +247,13 @@ function handle_H_GE(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_BOO(item,cPile,vPile,env,stor,result)
+function handle_BOO(item,cPile,vPile,env,stor)
 	push(vPile,item)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_AND(item,cPile,vPile,env,stor,result)
-	OP = "#AND"
+function handle_AND(item,cPile,vPile,env,stor)
+	OP = {"#AND"}
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
@@ -237,9 +262,9 @@ function handle_AND(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_H_AND(item,cPile,vPile,env,stor,result)
-	valueA = node.value(pop(vPile))
-	valueB = node.value(pop(vPile))
+function handle_H_AND(item,cPile,vPile,env,stor)
+	valueA = getValue(pop(vPile))
+	valueB = getValue(pop(vPile))
 	if valueA and valueB then
 		result="TRUE"
 	else
@@ -250,8 +275,8 @@ function handle_H_AND(item,cPile,vPile,env,stor,result)
 end
 
 
-function handle_OR(item,cPile,vPile,env,stor,result)
-	OP = "#OR"
+function handle_OR(item,cPile,vPile,env,stor)
+	OP = {"#OR"}
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
@@ -260,9 +285,9 @@ function handle_OR(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_H_OR(item,cPile,vPile,env,stor,result)
-	valueA = node.value(pop(vPile))
-	valueB = node.value(pop(vPile))
+function handle_H_OR(item,cPile,vPile,env,stor)
+	valueA = getValue(pop(vPile))
+	valueB = getValue(pop(vPile))
 	if valueA or valueB then
 		result="TRUE"
 	else
@@ -272,8 +297,8 @@ function handle_H_OR(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_NOT(item,cPile,vPile,env,stor,result)
-	OP = "#NOT"
+function handle_NOT(item,cPile,vPile,env,stor)
+	OP = {"#NOT"}
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
@@ -282,8 +307,8 @@ function handle_NOT(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_H_NOT(item,cPile,vPile,env,stor,result)
-	value = node.value(pop(vPile)) --nesse caso apenas um valor
+function handle_H_NOT(item,cPile,vPile,env,stor)
+	value = getValue(pop(vPile)) --nesse caso apenas um valor
 	if value then
 		result="FALSE"
 	else
@@ -293,12 +318,9 @@ function handle_H_NOT(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_ID(item,cPile,vPile,env,stor,result)
 
-end
-
-function handle_LOOP(item,cPile,vPile,env,stor,result)
-	OP="#LOOP"
+function handle_LOOP(item,cPile,vPile,env,stor)
+	OP={"#LOOP"}
 	booExp= getFirst(item)
 
 	push(vPile,item) 		--vai no vPile mesmo
@@ -309,8 +331,8 @@ function handle_LOOP(item,cPile,vPile,env,stor,result)
 
 end
 
-function handle_H_LOOP(item,cPile,vPile,env,stor,result)
-	booValue= node.value(pop(vPile))
+function handle_H_LOOP(item,cPile,vPile,env,stor)
+	booValue= getValue(pop(vPile))
 	loop = pop(vPile)
 	if booValue then
 		command = getSecond(loop)
@@ -319,8 +341,8 @@ function handle_H_LOOP(item,cPile,vPile,env,stor,result)
 	end
 end
 
-function handle_COND(item,cPile,vPile,env,stor,result)
-	OP="#COND"
+function handle_COND(item,cPile,vPile,env,stor)
+	OP={"#COND"}
 	booExp= getFirst(item)
 
 	push(vPile,item) 
@@ -331,8 +353,8 @@ function handle_COND(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_H_COND(item,cPile,vPile,env,stor,result)
-	booValue= node.value(pop(vPile))
+function handle_H_COND(item,cPile,vPile,env,stor)
+	booValue= getValue(pop(vPile))
 	cond = pop(vPile)
 	if booValue then --Pega o comando 1 ou o 2 
 		command = getSecond(loop)
@@ -343,15 +365,16 @@ function handle_H_COND(item,cPile,vPile,env,stor,result)
 	end
 end
 
-function handle_ID(item,cPile,vPile,env,stor,result)
-	idValue = node.value(item)
-	expBindded = stor[env[idValue]] 
-	push(vPile,expBindded)
+function handle_ID(item,cPile,vPile,env,stor)
+	idValue = getValue(item)
+	itemLoc = getValue(env[idValue])
+	itemBindded = stor[itemLoc] 
+	push(vPile,itemBindded)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_ASSING(item,cPile,vPile,env,stor,result)
-	OP = "#ASSING"
+function handle_ASSING(item,cPile,vPile,env,stor)
+	OP = {"#ASSING"}
 	id = getFirst(item)
 	exp = getSecond(item)
 
@@ -363,16 +386,16 @@ function handle_ASSING(item,cPile,vPile,env,stor,result)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_H_ASSING(item,cPile,vPile,env,stor,result)
+function handle_H_ASSING(item,cPile,vPile,env,stor)
 	expValue = pop(vPile) 
-	idValue = node.value(pop(vPile))
-	loc = getLocalization(env,stor) 
+	idValue = getValue(pop(vPile))
+	loc = getLocalization() 
 	env[idValue] = loc 
 	stor[loc] = expValue
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
-function handle_CSEQ(item,cPile,vPile,env,stor,result)
+function handle_CSEQ(item,cPile,vPile,env,stor)
 	command1 = getFirst(item)
 	command2 = getSecond(item)
 	push(cPile,command2)
@@ -386,9 +409,9 @@ Obs1: Ver expressoes que ordem queremos ValueA e ValueB  ou B A na pilha
 Obs2: Ver se ja colocamos os valores em si na pilha de valores ou deixamos  encapsulado pelo NUMB, BOO e ID 
 (considerando que talvez o BOO tenha qeu se manter no BOO(true) e BOO(false) ,para nao acharem que eh ID) 
 
-Obs3: Talvez tenha uma funcao chamada call que  chamaria um ID ,mas se ID fizer isso entao temos que mudar handle_ID e handle_ASSING
 
-
+Obs3: Colocar os valores em env com o tipo LOCATION (LOC)
+ 
 ]]
 
 handlers =
@@ -427,9 +450,6 @@ handlers =
         ["CSEQ"]=handle_CSEQ
     }
 
-
-
-
 --Funcao recursiva simples que apenas ve o que eh pedido e envia para outra funcao
 function automaton.rec(cPile,vPile,env,stor,result)
 	if cPile ~= {} then
@@ -440,7 +460,7 @@ function automaton.rec(cPile,vPile,env,stor,result)
 
 	stat=getStatement(item) --stat para statement, pois pode  ser operacao ou comando
 
-	handlers[stat](item,cPile,vPile,env,stor,result)
+	handlers[stat](item,cPile,vPile,env,stor)
 
 end
 
@@ -455,65 +475,7 @@ function automaton.auto(tree)
 
 	push(cPile,tree)
 
-	reusult = automaton.rec(cPile,vPile,env,stor,result)
-
+	result = automaton.rec(cPile,vPile,env,stor,result)
+	resp = getValue(result)
 end
 
-
-
-
---[[
-	if stat=="NUM" then
-
-		handle_NUM(cPile,vPile,env,stor,result)
-
-	elseif stat=="SUM" then
-
-		handle_SUM(cPile,vPile,env,stor,result)
-
-	elseif stat=="SUB" then
-
-		handle_SUB(cPile,vPile,env,stor,result)
-
-	elseif stat=="MUL" then
-
-		handle_MUL(cPile,vPile,env,stor,result)
-
-	elseif stat=="DIV" then
-
-		handle_DIV(cPile,vPile,env,stor,result)
-
-	elseif stat=="BOO" then
-
- 		handle_BOO(cPile,vPile,env,stor,result)
-
-	elseif stat=="LT" then
-
-		handle_LT(cPile,vPile,env,stor,result)
-
-	elseif stat=="LE" then
-
-		handle_LE(cPile,vPile,env,stor,result)
-
-	elseif stat=="GT" then
-
-		handle_GT(cPile,vPile,env,stor,result)
-
-	elseif stat=="GE" then
-
-		handle_GE(cPile,vPile,env,stor,result)
-
-	elseif stat=="AND" then
-
-		handle_AND(cPile,vPile,env,stor,result)
-
-	elseif stat=="OR" then
-
-		handle_OR(cPile,vPile,env,stor,result)
-
-	elseif stat=="NOT" then
-
-		handle_NOT(cPile,vPile,env,stor,result)
-
-	end
-]]
