@@ -2,11 +2,6 @@
 
 Referencia : https://github.com/ChristianoBraga/PiFramework/blob/master/doc/pi-in-a-nutshell.md
 
-Formatacao esperada : 5*(3+2) -> {MUL  {NUM {5}} {SUM {NUM{2}} {NUM{3}} } }
-
-
-
-
 Tipos Basicos 
 
 NUM numero 					{"NUM",<numero>}  | Ex: 3  => {"NUM",3}  | Tanto faz o  tipo do 3,int,float,double,, soh algo que  da pra fazer conta
