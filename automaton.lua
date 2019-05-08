@@ -14,8 +14,9 @@ SUM soma 					{"SUM", <numero A ou expressao A> , <numero B ou expressao B>} 	| 
 SUB subtracao				{"SUB", <numero A ou expressao A> , <numero B ou expressao B>}	| Ex :  4 - 1 ==> {"SUB", {"NUM",4} , {"NUM",1}}  
 MUL multiplicacao			{"MUL", <numero A ou expressao A> , <numero B ou expressao B>}	| Ex :  9 * 7 ==> {"MUL", {"NUM",9} , {"NUM",7}}  
 DIV divisao					{"DIV", <numero A ou expressao A> , <numero B ou expressao B>}	| Ex :  3 / 6 ==> {"DIV", {"NUM",3} , {"NUM",6}}  
-LT  menor que 				{"LT", <numero A ou expressao A> , <numero B ou expressao B>}	| Nesse e nos 3 abaixo nao estamos tratando caso  nao seja um numero,o prof falo disso de tipo tratar pra nao deixar entrar aqui
-LE	menor ou igual			{"LE", <numero A ou expressao A> , <numero B ou expressao B>}	| e deixar rolar sabe ? Por enquanto nao ligarmos pra qual "tipo" de info ele quer comparar
+EQ  igual					{"EQ", <numero A ou expressao A> , <numero B ou expressao B>}	| Nesse e nos 4 abaixo nao estamos tratando caso  nao seja um numero,o prof falo disso de tipo tratar pra nao deixar entrar aqui
+LT  menor que 				{"LT", <numero A ou expressao A> , <numero B ou expressao B>}	| e deixar rolar sabe ? Por enquanto nao ligarmos pra qual "tipo" de info ele quer comparar
+LE	menor ou igual			{"LE", <numero A ou expressao A> , <numero B ou expressao B>}	| 
 GT 	maior que 				{"GT", <numero A ou expressao A> , <numero B ou expressao B>}	|
 GE  maior ou igual 			{"GE", <numero A ou expressao A> , <numero B ou expressao B>}	|
 
@@ -57,24 +58,43 @@ function getLocalization(env,stor) --por enquanto sempre coloca no final do stor
 	return tLen(stor)
 end
 
-function getValue(item)
+function getValue(item) --NUM,BOO,ID,LOC
+	category = item[1]
+	value = item[2]
+	if category == "NUM" then
+		return value
+	elseif category == "BOO" then
+		if value == "TRUE" then
+			return true
+		elseif value == "FALSE" then
+			return false
+		else
+			print("Erro em valor de Booleana")
+		end
+	elseif category == "ID" then
+		return value
+	elseif category == "LOC" then
+		return value	 	
+	end
 
 end
 
-function getFirst(item)
+function getFirst(item) --{"Category",value1,value2,value3}
+	return item[2]
 
 end
 
 function getSecond(item)
-
+	return item[2]
 end
 
 function getThird(item)
-
+	return item[3]
 end
 
-function makeNode(item)
-
+function makeNode(value,category)
+	node = {category,value}
+	return node
 end
 
 function handle_NUM(item,cPile,vPile,env,stor)
@@ -87,8 +107,8 @@ function handle_SUM(item,cPile,vPile,env,stor)
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
-	push(cPile,valueB)
 	push(cPile,valueA)
+	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
@@ -105,8 +125,8 @@ function handle_SUB(item,cPile,vPile,env,stor)
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
-	push(cPile,valueB)
 	push(cPile,valueA)
+	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
@@ -123,8 +143,8 @@ function handle_MUL(item,cPile,vPile,env,stor)
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
-	push(cPile,valueB)
 	push(cPile,valueA)
+	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
@@ -141,8 +161,8 @@ function handle_DIV(item,cPile,vPile,env,stor)
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
-	push(cPile,valueB)
 	push(cPile,valueA)
+	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
@@ -154,13 +174,35 @@ function handle_H_DIV(item,cPile,vPile,env,stor)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
+function handle_EQ(item,cPile,vPile,env,stor)
+	OP = {"#EQ"}
+	valueA = getFirst(item)
+	valueB = getSecond(item)
+	push(cPile,OP)
+	push(cPile,valueA)
+	push(cPile,valueB)
+	automaton.rec(cPile,vPile,env,stor,result)
+end
+
+function handle_H_EQ(item,cPile,vPile,env,stor)
+	valueA = getValue(pop(vPile))
+	valueB = getValue(pop(vPile))
+	if valueA == valueB then 
+		result = "TRUE"
+	else
+		result = "FALSE"
+	end
+	push(vPile,makeNode(result,"BOO"))
+	automaton.rec(cPile,vPile,env,stor,result)
+end
+
 function handle_LT(item,cPile,vPile,env,stor)
 	OP = {"#LT"}
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
-	push(cPile,valueB)
 	push(cPile,valueA)
+	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
@@ -181,8 +223,8 @@ function handle_LE(item,cPile,vPile,env,stor)
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
-	push(cPile,valueB)
 	push(cPile,valueA)
+	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
@@ -203,8 +245,8 @@ function handle_GT(item,cPile,vPile,env,stor)
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
-	push(cPile,valueB)
 	push(cPile,valueA)
+	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
@@ -225,8 +267,8 @@ function handle_GE(item,cPile,vPile,env,stor)
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
-	push(cPile,valueB)
 	push(cPile,valueA)
+	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
@@ -252,8 +294,8 @@ function handle_AND(item,cPile,vPile,env,stor)
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
-	push(cPile,valueB)
 	push(cPile,valueA)
+	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
@@ -275,8 +317,8 @@ function handle_OR(item,cPile,vPile,env,stor)
 	valueA = getFirst(item)
 	valueB = getSecond(item)
 	push(cPile,OP)
-	push(cPile,valueB)
 	push(cPile,valueA)
+	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
 
@@ -295,9 +337,7 @@ end
 function handle_NOT(item,cPile,vPile,env,stor)
 	OP = {"#NOT"}
 	valueA = getFirst(item)
-	valueB = getSecond(item)
 	push(cPile,OP)
-	push(cPile,valueB)
 	push(cPile,valueA)
 	automaton.rec(cPile,vPile,env,stor,result)
 end
@@ -422,6 +462,8 @@ handlers =
         ["#MUL"]=handle_H_MUL,
         ["DIV"]=handle_DIV,
         ["#DIV"]=handle_H_DIV,
+        ["EQ"]=handle_EQ,
+        ["#EQ"]=handle_H_EQ,
         ["LT"]=handle_LT,
         ["#LT"]=handle_H_LT,
         ["LE"]=handle_LE,
