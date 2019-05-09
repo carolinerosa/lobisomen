@@ -34,15 +34,20 @@ ASSING 						{"ASSING",<ID>,<expressaoAritmetica ou Booleana ou Num ou Boo>} | E
 
 ]]
 
+local automaton = {}
 
 function tLen(T) --Prasaber o tamanho da tabela | serio nao use  # nao eh deterministico
-  local count = 0
-  for _ in pairs(T) do count = count + 1 end
-  return count
+	if T == nil then
+		return 0
+	else
+		local count = 0
+		for _ in pairs(T) do count = count + 1 end
+		return count
+	end
 end
 
 function pop(pile)
-	if pile ~= {} then
+	if next(pile) ~= nil then
 		lastIndex = tLen(pile)
 		value = pile[lastIndex]
 		table.remove(pile,lastIndex)
@@ -53,9 +58,51 @@ end
 function push(pile,item)
 	table.insert(pile,item) --como nao tem valor coloca no final
 end
+ 
+function tPrint(myTable)
+	if myTable==nil then
+		io.write("")
+	elseif type(myTable) == "table" then
+		io.write("{")
+		for k,v in pairs(myTable) do
+			if type(v) == "table" then
+				tPrint(v)
+			else
+	    		io.write(v,",")
+			end
+		end
+		io.write("}")
+	else 
+		io.write(myTable)	
+	end
+end
+
+function printAutomaton(item,cPile,vPile,env,stor)
+	print("=========================================================================================================================")
+
+
+	io.write("Item : ")
+	tPrint(item)
+	print("")
+	io.write("cPile : ")
+	tPrint(cPile)
+	print("")
+	io.write("vPile : ")
+	tPrint(vPile)
+	print("")
+	io.write("env : ")
+	tPrint(env)
+	print("")
+	io.write("stor : ")
+	tPrint(stor)
+	print("")
+
+	print("=========================================================================================================================")
+end
+
 
 function getLocalization(env,stor) --por enquanto sempre coloca no final do stor 
-	return tLen(stor)
+	return tLen(stor)+1
 end
 
 function getValue(item) --NUM,BOO,ID,LOC
@@ -79,17 +126,21 @@ function getValue(item) --NUM,BOO,ID,LOC
 
 end
 
+function getStatement(item)
+	return item[1]
+end
+
 function getFirst(item) --{"Category",value1,value2,value3}
 	return item[2]
 
 end
 
-function getSecond(item)
-	return item[2]
+function getSecond(item)  --{"Category",value1,value2,value3}
+	return item[3]
 end
 
-function getThird(item)
-	return item[3]
+function getThird(item)  --{"Category",value1,value2,value3}
+	return item[4]
 end
 
 function makeNode(value,category)
@@ -99,7 +150,7 @@ end
 
 function handle_NUM(item,cPile,vPile,env,stor)
 	push(vPile,item)
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_SUM(item,cPile,vPile,env,stor)
@@ -109,15 +160,21 @@ function handle_SUM(item,cPile,vPile,env,stor)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_SUM(item,cPile,vPile,env,stor)--#SUM , soma dos dois primeiros itens em vPile
+	--vA = pop(vPile)
+	--vB = pop(vPile)
+
 	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
+
 	result = valueA + valueB
-	push(vPile,makeNode(result,"NUM"))
-	automaton.rec(cPile,vPile,env,stor,result)
+	node= makeNode(result,"NUM")
+
+	push(vPile,node)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_SUB(item,cPile,vPile,env,stor)
@@ -127,7 +184,7 @@ function handle_SUB(item,cPile,vPile,env,stor)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_SUB(item,cPile,vPile,env,stor)
@@ -135,7 +192,7 @@ function handle_H_SUB(item,cPile,vPile,env,stor)
 	valueB = getValue(pop(vPile))
 	result = valueA - valueB
 	push(vPile,makeNode(result,"NUM"))
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_MUL(item,cPile,vPile,env,stor)
@@ -145,7 +202,7 @@ function handle_MUL(item,cPile,vPile,env,stor)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_MUL(item,cPile,vPile,env,stor)
@@ -153,7 +210,7 @@ function handle_H_MUL(item,cPile,vPile,env,stor)
 	valueB = getValue(pop(vPile))
 	result = valueA * valueB
 	push(vPile,makeNode(result,"NUM"))
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_DIV(item,cPile,vPile,env,stor)
@@ -163,7 +220,7 @@ function handle_DIV(item,cPile,vPile,env,stor)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_DIV(item,cPile,vPile,env,stor)
@@ -171,7 +228,7 @@ function handle_H_DIV(item,cPile,vPile,env,stor)
 	valueB = getValue(pop(vPile))
 	result = valueA / valueB
 	push(vPile,makeNode(result,"NUM"))
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_EQ(item,cPile,vPile,env,stor)
@@ -181,7 +238,7 @@ function handle_EQ(item,cPile,vPile,env,stor)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_EQ(item,cPile,vPile,env,stor)
@@ -193,7 +250,7 @@ function handle_H_EQ(item,cPile,vPile,env,stor)
 		result = "FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_LT(item,cPile,vPile,env,stor)
@@ -203,7 +260,7 @@ function handle_LT(item,cPile,vPile,env,stor)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_LT(item,cPile,vPile,env,stor)
@@ -215,7 +272,7 @@ function handle_H_LT(item,cPile,vPile,env,stor)
 		result = "FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_LE(item,cPile,vPile,env,stor)
@@ -225,7 +282,7 @@ function handle_LE(item,cPile,vPile,env,stor)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_LE(item,cPile,vPile,env,stor)
@@ -237,7 +294,7 @@ function handle_H_LE(item,cPile,vPile,env,stor)
 		result = "FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_GT(item,cPile,vPile,env,stor)
@@ -247,7 +304,7 @@ function handle_GT(item,cPile,vPile,env,stor)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_GT(item,cPile,vPile,env,stor)
@@ -259,7 +316,7 @@ function handle_H_GT(item,cPile,vPile,env,stor)
 		result = "FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_GE(item,cPile,vPile,env,stor)
@@ -269,7 +326,7 @@ function handle_GE(item,cPile,vPile,env,stor)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_GE(item,cPile,vPile,env,stor)
@@ -281,12 +338,12 @@ function handle_H_GE(item,cPile,vPile,env,stor)
 		result = "FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_BOO(item,cPile,vPile,env,stor)
 	push(vPile,item)
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_AND(item,cPile,vPile,env,stor)
@@ -296,7 +353,7 @@ function handle_AND(item,cPile,vPile,env,stor)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_AND(item,cPile,vPile,env,stor)
@@ -308,7 +365,7 @@ function handle_H_AND(item,cPile,vPile,env,stor)
 		result="FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 
@@ -319,7 +376,7 @@ function handle_OR(item,cPile,vPile,env,stor)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_OR(item,cPile,vPile,env,stor)
@@ -331,7 +388,7 @@ function handle_H_OR(item,cPile,vPile,env,stor)
 		result="FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_NOT(item,cPile,vPile,env,stor)
@@ -339,7 +396,7 @@ function handle_NOT(item,cPile,vPile,env,stor)
 	valueA = getFirst(item)
 	push(cPile,OP)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_NOT(item,cPile,vPile,env,stor)
@@ -350,7 +407,7 @@ function handle_H_NOT(item,cPile,vPile,env,stor)
 		result="TRUE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 
@@ -362,7 +419,7 @@ function handle_LOOP(item,cPile,vPile,env,stor)
 
 	push(cPile,OP)
 	push(cPile,booExp)
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 
 end
 
@@ -385,7 +442,7 @@ function handle_COND(item,cPile,vPile,env,stor)
 	push(cPile,OP)
 	push(cPile,booExp)
 
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_COND(item,cPile,vPile,env,stor)
@@ -405,7 +462,7 @@ function handle_ID(item,cPile,vPile,env,stor)
 	itemLoc = getValue(env[idValue])
 	itemBindded = stor[itemLoc] 
 	push(vPile,itemBindded)
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_ASSING(item,cPile,vPile,env,stor)
@@ -418,16 +475,16 @@ function handle_ASSING(item,cPile,vPile,env,stor)
 	push(cPile,OP) 		
 	push(cPile,exp)
 
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_ASSING(item,cPile,vPile,env,stor)
 	expValue = pop(vPile) 
 	idValue = getValue(pop(vPile))
-	loc = getLocalization() 
+	loc = getLocalization(env,stor) 
 	env[idValue] = loc 
 	stor[loc] = expValue
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_CSEQ(item,cPile,vPile,env,stor)
@@ -435,7 +492,7 @@ function handle_CSEQ(item,cPile,vPile,env,stor)
 	command2 = getSecond(item)
 	push(cPile,command2)
 	push(cPile,command1)
-	automaton.rec(cPile,vPile,env,stor,result)
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 --[[
@@ -488,16 +545,22 @@ handlers =
     }
 
 --Funcao recursiva simples que apenas ve o que eh pedido e envia para outra funcao
-function automaton.rec(cPile,vPile,env,stor,result)
-	if cPile ~= {} then
-		return result
+function automaton.rec(cPile,vPile,env,stor)
+	if tLen(cPile) == 0 then
+		print("O resultado foi : ")
+		printAutomaton(item,cPile,vPile,env,stor)
+
+		return vPile
+
+	else 
+		item = pop(cPile)
+
+		printAutomaton(item,cPile,vPile,env,stor)
+
+		stat=getStatement(item) --stat para statement, pois pode  ser operacao ou comando
+
+		handlers[stat](item,cPile,vPile,env,stor)
 	end
-
-	item = pop(cPile)
-
-	stat=getStatement(item) --stat para statement, pois pode  ser operacao ou comando
-
-	handlers[stat](item,cPile,vPile,env,stor)
 
 end
 
@@ -506,13 +569,21 @@ function automaton.auto(tree)
 	cPile={} --control pile
 	vPile={} --value pile
 	env={} 	 --enviroment
-	sto={}   --storage
+	stor={}   --storage
 
-	result=0 --apenas iniciando variavel de retorno final
 
 	push(cPile,tree)
 
-	result = automaton.rec(cPile,vPile,env,stor,result)
-	resp = getValue(result)
+	result = automaton.rec(cPile,vPile,env,stor)
+
+	--tPrint(result)
 end
 
+--3+4
+exTree1 = {"SUM",{"NUM",6},{"NUM",2}}
+
+exTree2 =  {"AND",{"BOO","TRUE"},{"GT",{"NUM",4},{"NUM",3}}}
+
+exTree3 = {"ASSING", {"ID", "bola"}, {"NUM",3} } 
+
+automaton.auto(exTree3)
