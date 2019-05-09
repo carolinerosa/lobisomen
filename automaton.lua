@@ -547,13 +547,15 @@ function automaton.rec(cPile,vPile,env,stor)
 		print("O resultado foi : ")
 		printAutomaton(item,cPile,vPile,env,stor)
 
-		return 
-
+		return {vPile,stor}
 	else 
+
 		item = pop(cPile)
+		print("O item eh :", tPrint(item))
 
 		--Comente para a apresentacao
 		printAutomaton(item,cPile,vPile,env,stor)
+
 
 		stat=getStatement(item) --stat para statement, pois pode  ser operacao ou comando
 
@@ -565,10 +567,11 @@ end
 
 function automaton.auto(tree)
 
-	cPile={} --control pile
-	vPile={} --value pile
-	env={} 	 --enviroment
-	stor={}   --storage
+	cPile={} 	--control pile
+	vPile={} 	--value pile
+	env={} 	 	--enviroment
+	stor={}   	--storage
+	loc.init() 	--inicializando o loc para cada programa, soh comentar caso nao queira resetar ele
 
 	push(cPile,tree)
 
@@ -598,14 +601,15 @@ exTree6 = {"LT",{"NUM",4},{"NUM",3}}
 exTree7 = {"LE",{"NUM",4},{"NUM",3}}
 exTree8 = {"GT",{"NUM",4},{"NUM",3}}
 exTree9 = {"GE",{"NUM",4},{"NUM",3}}
-exTree10 =  {"AND",{"BOO","TRUE"},{"GT",{"NUM",4},{"NUM",3}}}
-exTree11 =  {"OR",{"BOO","TRUE"},{"GT",{"NUM",4},{"NUM",3}}}
+exTree10 = {"AND",{"BOO","TRUE"},{"GT",{"NUM",4},{"NUM",3}}}
+exTree11 = {"OR",{"BOO","TRUE"},{"GT",{"NUM",4},{"NUM",3}}}
 exTree12 = {"NOT", {"LE",{"NUM",5},{"NUM",6}}} 
 exTree13 = {"ASSING", {"ID", "bola"}, {"NUM",3}} 
 exTree14 = {"COND", exTree10 , exTree1 , exTree3 }
 exTree15 = {"LOOP", exTree11 , exTree3}
 exTree16 = {"CSEQ", exTree13 , {"SUM",{"ID","bola"},{"NUM",2}} }
-exTree17 =  {"AND",{"BOO","TRUE"},{"NUM",3}}
+exTree17 = {"AND",{"BOO","TRUE"},{"NUM",3}}
+exTree18 = {"CSEQ", {"ASSING", {"ID", "bola"}, {"NUM",3}}  , {"ASSING", {"ID", "ogro"}, {"NUM",7}} }
 
 
 automaton.auto(exTree1)
@@ -625,3 +629,4 @@ automaton.auto(exTree14)
 automaton.auto(exTree15)
 automaton.auto(exTree16)
 automaton.auto(exTree17)
+automaton.auto(exTree18)
