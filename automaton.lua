@@ -551,7 +551,6 @@ function automaton.rec(cPile,vPile,env,stor)
 	else 
 
 		item = pop(cPile)
-		print("O item eh :", tPrint(item))
 
 		--Comente para a apresentacao
 		printAutomaton(item,cPile,vPile,env,stor)
@@ -571,7 +570,7 @@ function automaton.auto(tree)
 	vPile={} 	--value pile
 	env={} 	 	--enviroment
 	stor={}   	--storage
-	loc.init() 	--inicializando o loc para cada programa, soh comentar caso nao queira resetar ele
+	loc.init() 	--inicializando o loc para cada programa, soh comentar caso nao queira resetar ele 
 
 	push(cPile,tree)
 
