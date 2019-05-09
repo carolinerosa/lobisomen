@@ -82,8 +82,7 @@ function tPrint(myTable)
 end
 
 function printAutomaton(item,cPile,vPile,env,stor)
-	print("=========================================================================================================================")
-
+	io.write("=========================================================================================================================")
 
 	io.write("Item\t: ")
 	tPrint(item)
@@ -607,8 +606,6 @@ exTree14 = {"COND", exTree10 , exTree1 , exTree3 }
 exTree15 = {"LOOP", exTree11 , exTree3}
 exTree16 = {"CSEQ", exTree13 , {"SUM",{"ID","bola"},{"NUM",2}} }
 exTree17 =  {"AND",{"BOO","TRUE"},{"NUM",3}}
-
-
 
 
 automaton.auto(exTree1)
