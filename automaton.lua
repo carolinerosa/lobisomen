@@ -454,10 +454,10 @@ function handle_H_COND(item,cPile,vPile,env,stor)
 	booValue= getValue(pop(vPile))
 	cond = pop(vPile)
 	if booValue then --Pega o comando 1 ou o 2 
-		command = getSecond(loop)
+		command = getSecond(cond)
 		push(cPile,command)
 	else
-		command = getThird(loop)
+		command = getThird(cond)
 		push(cPile,command)
 	end
 end
@@ -552,6 +552,7 @@ handlers =
 --Funcao recursiva simples que apenas ve o que eh pedido e envia para outra funcao
 function automaton.rec(cPile,vPile,env,stor)
 	if tLen(cPile) == 0 then
+		
 		print("O resultado foi : ")
 		printAutomaton(item,cPile,vPile,env,stor)
 
@@ -580,15 +581,37 @@ function automaton.auto(tree)
 	push(cPile,tree)
 
 	result = automaton.rec(cPile,vPile,env,stor)
-
-	--tPrint(result)
 end
 
---3+4
+
 exTree1 = {"SUM",{"NUM",6},{"NUM",2}}
+exTree2 = {"SUB",{"NUM",6},{"NUM",2}}
+exTree3 = {"MUL",{"NUM",6},{"NUM",2}}
+exTree4 = {"DIV",{"NUM",6},{"NUM",2}}
+exTree5 = {"EQ",{"NUM",4},{"NUM",3}}
+exTree6 = {"LT",{"NUM",4},{"NUM",3}}
+exTree7 = {"LE",{"NUM",4},{"NUM",3}}
+exTree8 = {"GT",{"NUM",4},{"NUM",3}}
+exTree9 = {"GE",{"NUM",4},{"NUM",3}}
+exTree10 =  {"AND",{"BOO","TRUE"},{"GT",{"NUM",4},{"NUM",3}}}
+exTree11 =  {"OR",{"BOO","TRUE"},{"GT",{"NUM",4},{"NUM",3}}}
+exTree12 = {"NOT", {"LE",{"NUM",5},{"NUM",6}}} 
+exTree13 = {"ASSING", {"ID", "bola"}, {"NUM",3}} 
+exTree14 = {"COND", exTree10 , exTree1 , exTree3 }
+exTree15 = {"LOOP", exTree11 , exTree3}
 
-exTree2 =  {"AND",{"BOO","TRUE"},{"GT",{"NUM",4},{"NUM",3}}}
-
-exTree3 = {"ASSING", {"ID", "bola"}, {"NUM",3} } 
-
+automaton.auto(exTree1)
+automaton.auto(exTree2)
 automaton.auto(exTree3)
+automaton.auto(exTree4)
+automaton.auto(exTree5)
+automaton.auto(exTree6)
+automaton.auto(exTree7)
+automaton.auto(exTree8)
+automaton.auto(exTree9)
+automaton.auto(exTree10)
+automaton.auto(exTree11)
+automaton.auto(exTree12)
+automaton.auto(exTree13)
+automaton.auto(exTree14)
+automaton.auto(exTree15)
