@@ -31,6 +31,7 @@ Comandos
 LOOP 						{"LOOP",<expressaoBooleana>,<expressaoBooleana ou aritmetica ou comando>} |Ex: LOOP TRUE 1 + 1 ==> {"LOOP",{"BOO","TRUE"}, {"SUM", 1 , 1} } | EXMaisDificil: LOOP bola > 4 bola + 1  ou LOOP (bola > 4) bola + 1  ==> {"LOOP", {"GT" , {"ID", "bola"} , {"NUM", 4} } , {"SUM", {"ID","bola"}, {"NUM", 1} } } 
 COND  						{"COND",<expressaoBooleana>,<expressaoBooleana ou aritmetica ou comando A> , <expressaoBooleana ou aritmetica ou comando B>} | Ex: COND 0 < 1 5+7 3*4 ==> << 0<1=Exp  5+7=A, 3*4=B >>  {"COND", {Exp} , {A} , {B}}
 ASSING 						{"ASSING",<ID>,<expressaoAritmetica ou Booleana ou Num ou Boo>} | Ex: bola = 3  ou bola := 3   (como preferir, da no mesmo pro meu lado)  ==> {"ASSING", {"ID", "bola"}, {"NUM",3} } 
+CSEQ 						{"CSEQ" , <expressaoBooleana ou aritmetica ou comando A>,<expressaoBooleana ou aritmetica ou comando B>}
 
 ]]
 
@@ -107,6 +108,7 @@ end
 function getLocalization() --por enquanto sempre coloca no final do stor 
 	loc.getLoc()
 	location = loc.size
+	--print("LOCALIZATION IS : " location)
 	return location
 end
 
@@ -486,9 +488,9 @@ end
 function handle_H_ASSING(item,cPile,vPile,env,stor)
 	expValue = pop(vPile) 
 	idValue = getValue(pop(vPile))
-	loc = getLocalization(env,stor) 
-	env[idValue] = loc 
-	stor[loc] = expValue
+	localization = getLocalization() 
+	env[idValue] = loc.makeLoc(localization)
+	stor[localization] = expValue
 	automaton.rec(cPile,vPile,env,stor)
 end
 
@@ -499,17 +501,6 @@ function handle_CSEQ(item,cPile,vPile,env,stor)
 	push(cPile,command1)
 	automaton.rec(cPile,vPile,env,stor)
 end
-
---[[
-Obs1: Ver expressoes que ordem queremos ValueA e ValueB  ou B A na pilha
-
-Obs2: Ver se ja colocamos os valores em si na pilha de valores ou deixamos  encapsulado pelo NUMB, BOO e ID 
-(considerando que talvez o BOO tenha qeu se manter no BOO(true) e BOO(false) ,para nao acharem que eh ID) 
-
-
-Obs3: Colocar os valores em env com o tipo LOCATION (LOC)
- 
-]]
 
 handlers =
     {
@@ -552,7 +543,7 @@ handlers =
 --Funcao recursiva simples que apenas ve o que eh pedido e envia para outra funcao
 function automaton.rec(cPile,vPile,env,stor)
 	if tLen(cPile) == 0 then
-		
+
 		print("O resultado foi : ")
 		printAutomaton(item,cPile,vPile,env,stor)
 
@@ -599,6 +590,7 @@ exTree12 = {"NOT", {"LE",{"NUM",5},{"NUM",6}}}
 exTree13 = {"ASSING", {"ID", "bola"}, {"NUM",3}} 
 exTree14 = {"COND", exTree10 , exTree1 , exTree3 }
 exTree15 = {"LOOP", exTree11 , exTree3}
+exTree16 = {"CSEQ", exTree13 , {"SUM",{"ID","bola"},{"NUM",2}} }
 
 automaton.auto(exTree1)
 automaton.auto(exTree2)
@@ -615,3 +607,4 @@ automaton.auto(exTree12)
 automaton.auto(exTree13)
 automaton.auto(exTree14)
 automaton.auto(exTree15)
+automaton.auto(exTree16)

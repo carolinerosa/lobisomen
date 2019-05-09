@@ -7,4 +7,8 @@ function loc.getLoc()
 	return loc.size
 end
 
+function loc.makeLoc(value)
+	return {"LOC",value}
+end
+
 return loc
