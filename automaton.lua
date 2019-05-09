@@ -34,7 +34,10 @@ ASSING 						{"ASSING",<ID>,<expressaoAritmetica ou Booleana ou Num ou Boo>} | E
 
 ]]
 
+loc = require "localization" 
+
 local automaton = {}
+
 
 function tLen(T) --Prasaber o tamanho da tabela | serio nao use  # nao eh deterministico
 	if T == nil then
@@ -101,8 +104,10 @@ function printAutomaton(item,cPile,vPile,env,stor)
 end
 
 
-function getLocalization(env,stor) --por enquanto sempre coloca no final do stor 
-	return tLen(stor)+1
+function getLocalization() --por enquanto sempre coloca no final do stor 
+	loc.getLoc()
+	location = loc.size
+	return location
 end
 
 function getValue(item) --NUM,BOO,ID,LOC
