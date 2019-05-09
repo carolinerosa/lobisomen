@@ -544,14 +544,16 @@ handlers =
 function automaton.rec(cPile,vPile,env,stor)
 	if tLen(cPile) == 0 then
 
+		--Comente para a apresentacao
 		print("O resultado foi : ")
 		printAutomaton(item,cPile,vPile,env,stor)
 
-		return vPile
+		return 
 
 	else 
 		item = pop(cPile)
 
+		--Comente para a apresentacao
 		printAutomaton(item,cPile,vPile,env,stor)
 
 		stat=getStatement(item) --stat para statement, pois pode  ser operacao ou comando
@@ -559,6 +561,7 @@ function automaton.rec(cPile,vPile,env,stor)
 		handlers[stat](item,cPile,vPile,env,stor)
 	end
 
+	return {vPile,stor}
 end
 
 function automaton.auto(tree)
@@ -568,10 +571,22 @@ function automaton.auto(tree)
 	env={} 	 --enviroment
 	stor={}   --storage
 
-
 	push(cPile,tree)
 
 	result = automaton.rec(cPile,vPile,env,stor)
+
+	finalVPile =  result[1]
+	finalStor = result[2]
+
+	--Impressao bonitinha de teoricamente o que tinhamos que exibir. Recomendo comentar caso vah se utilizar das outras visualizacoes
+	--[[
+	print("\n O estado final da Pilha de  valores  foi:")
+	tPrint(finalVPile)
+	print("\n\n O estado final da Memoria foi: ")
+	tPrint(finalStor)
+	print()
+	]]
+
 end
 
 
@@ -591,6 +606,10 @@ exTree13 = {"ASSING", {"ID", "bola"}, {"NUM",3}}
 exTree14 = {"COND", exTree10 , exTree1 , exTree3 }
 exTree15 = {"LOOP", exTree11 , exTree3}
 exTree16 = {"CSEQ", exTree13 , {"SUM",{"ID","bola"},{"NUM",2}} }
+exTree17 =  {"AND",{"BOO","TRUE"},{"NUM",3}}
+
+
+
 
 automaton.auto(exTree1)
 automaton.auto(exTree2)
@@ -608,3 +627,4 @@ automaton.auto(exTree13)
 automaton.auto(exTree14)
 automaton.auto(exTree15)
 automaton.auto(exTree16)
+automaton.auto(exTree17)
