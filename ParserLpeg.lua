@@ -1,5 +1,7 @@
 lpeg=require "lpeg"
 
+parse = {}
+
 local white = lpeg.S(" \t\r\n") ^ 0
 
 
@@ -78,7 +80,7 @@ local function node(p)
 	
 	--[[ inclusao do tipo ID --]]
 	if(type(left) == 'string')then
-		print("e string")
+		--print("e string")
 		left={"ID",left}
 		 
 	end        
@@ -88,7 +90,7 @@ local function node(p)
 		if(type(left)=='number')then
 			return{"NUM",left}
 		else
-			return{left}
+			return left
 		end
 	end
 
@@ -102,8 +104,7 @@ local function nodeCmd(p)
 
 		if(id =='=') then
 			value ="ASSIGN"
-			id = {"EQ"}
-			return{value,op,id, atrib }
+			return{value,op, atrib }
 		end
 
 		return{op,id, atrib, value}
@@ -137,34 +138,36 @@ local comands = lpeg.P({
 	loopGr = node (integer * addsub * integer)
 })
 
-function generator(s)
-	
-print((calculator:match(s)))
-    for i,v in ipairs(calculator:match(s)) do 
-        if (type(v) == 'table') then 
-            for t,u in ipairs(v) do
-		if(type(u) == 'table')then
-			for y,z in ipairs(u) do
-				print(y, z)
-			end
-		else		
-		print(t,u) 
-	
-		end
-            end
-        else
-            print(i,v)
-        end
-    end
+function parse.generator(s)
+ return calculator:match(s)
+   --[[ print((calculator:match(s)))
+      for i,v in ipairs(calculator:match(s)) do 
+          if (type(v) == 'table') then 
+              for t,u in ipairs(v) do
+  		if(type(u) == 'table')then
+  			for y,z in ipairs(u) do
+  				print(y, z)
+  			end
+  		else		
+  		print(t,u) 
+  	
+  		end
+              end
+          else
+              print(i,v)
+          end
+      end]] 
 end
 
-
+--[[
 expressao = io.stdin:read'*l'
 while (expressao~='exit') do
     print("Expressão: ",expressao)
     generator(expressao)
     expressao = io.stdin:read'*l'
 end
+]]
+--Olhar COND & LOOP podendo receber expressoes boleanasem vez de bools
+--Tudo que recebe uma bool pode receber uma expressao boleana
 
-
-
+return parse

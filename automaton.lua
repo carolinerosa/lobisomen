@@ -30,7 +30,7 @@ Comandos
 
 LOOP 						{"LOOP",<expressaoBooleana>,<expressaoBooleana ou aritmetica ou comando>} |Ex: LOOP TRUE 1 + 1 ==> {"LOOP",{"BOO","TRUE"}, {"SUM", 1 , 1} } | EXMaisDificil: LOOP bola > 4 bola + 1  ou LOOP (bola > 4) bola + 1  ==> {"LOOP", {"GT" , {"ID", "bola"} , {"NUM", 4} } , {"SUM", {"ID","bola"}, {"NUM", 1} } } 
 COND  						{"COND",<expressaoBooleana>,<expressaoBooleana ou aritmetica ou comando A> , <expressaoBooleana ou aritmetica ou comando B>} | Ex: COND 0 < 1 5+7 3*4 ==> << 0<1=Exp  5+7=A, 3*4=B >>  {"COND", {Exp} , {A} , {B}}
-ASSING 						{"ASSING",<ID>,<expressaoAritmetica ou Booleana ou Num ou Boo>} | Ex: bola = 3  ou bola := 3   (como preferir, da no mesmo pro meu lado)  ==> {"ASSING", {"ID", "bola"}, {"NUM",3} } 
+ASSIGN 						{"ASSIGN",<ID>,<expressaoAritmetica ou Booleana ou Num ou Boo>} | Ex: bola = 3  ou bola := 3   (como preferir, da no mesmo pro meu lado)  ==> {"ASSIGN", {"ID", "bola"}, {"NUM",3} } 
 CSEQ 						{"CSEQ" , <expressaoBooleana ou aritmetica ou comando A>,<expressaoBooleana ou aritmetica ou comando B>}
 
 ]]
@@ -82,7 +82,7 @@ function tPrint(myTable)
 end
 
 function printAutomaton(item,cPile,vPile,env,stor)
-	io.write("=========================================================================================================================")
+	print("=========================================================================================================================")
 
 	io.write("Item\t: ")
 	tPrint(item)
@@ -471,8 +471,8 @@ function handle_ID(item,cPile,vPile,env,stor)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_ASSING(item,cPile,vPile,env,stor)
-	OP = {"#ASSING"}
+function handle_ASSIGN(item,cPile,vPile,env,stor)
+	OP = {"#ASSIGN"}
 	id = getFirst(item)
 	exp = getSecond(item)
 
@@ -484,7 +484,7 @@ function handle_ASSING(item,cPile,vPile,env,stor)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_H_ASSING(item,cPile,vPile,env,stor)
+function handle_H_ASSIGN(item,cPile,vPile,env,stor)
 	expValue = pop(vPile) 
 	idValue = getValue(pop(vPile))
 	localization = getLocalization() 
@@ -534,8 +534,8 @@ handlers =
         ["#LOOP"]=handle_H_LOOP,
         ["COND"]=handle_COND,
         ["#COND"]=handle_H_COND,
-        ["ASSING"]=handle_ASSING,
-        ["#ASSING"]=handle_H_ASSING,
+        ["ASSIGN"]=handle_ASSIGN,
+        ["#ASSIGN"]=handle_H_ASSIGN,
         ["CSEQ"]=handle_CSEQ
     }
 
@@ -570,7 +570,7 @@ function automaton.auto(tree)
 	vPile={} 	--value pile
 	env={} 	 	--enviroment
 	stor={}   	--storage
-	loc.init() 	--inicializando o loc para cada programa, soh comentar caso nao queira resetar ele 
+	--loc.init() 	--inicializando o loc para cada programa, soh comentar caso nao queira resetar ele 
 
 	push(cPile,tree)
 
@@ -591,6 +591,9 @@ function automaton.auto(tree)
 end
 
 
+--Testes podem ser feitos sem o parser
+
+--[[ 
 exTree1 = {"SUM",{"NUM",6},{"NUM",2}}
 exTree2 = {"SUB",{"NUM",6},{"NUM",2}}
 exTree3 = {"MUL",{"NUM",6},{"NUM",2}}
@@ -603,12 +606,12 @@ exTree9 = {"GE",{"NUM",4},{"NUM",3}}
 exTree10 = {"AND",{"BOO","TRUE"},{"GT",{"NUM",4},{"NUM",3}}}
 exTree11 = {"OR",{"BOO","TRUE"},{"GT",{"NUM",4},{"NUM",3}}}
 exTree12 = {"NOT", {"LE",{"NUM",5},{"NUM",6}}} 
-exTree13 = {"ASSING", {"ID", "bola"}, {"NUM",3}} 
+exTree13 = {"ASSIGN", {"ID", "bola"}, {"NUM",3}} 
 exTree14 = {"COND", exTree10 , exTree1 , exTree3 }
 exTree15 = {"LOOP", exTree11 , exTree3}
 exTree16 = {"CSEQ", exTree13 , {"SUM",{"ID","bola"},{"NUM",2}} }
 exTree17 = {"AND",{"BOO","TRUE"},{"NUM",3}}
-exTree18 = {"CSEQ", {"ASSING", {"ID", "bola"}, {"NUM",3}}  , {"ASSING", {"ID", "ogro"}, {"NUM",7}} }
+exTree18 = {"CSEQ", {"ASSIGN", {"ID", "bola"}, {"NUM",3}}  , {"ASSIGN", {"ID", "ogro"}, {"NUM",7}} }
 
 
 automaton.auto(exTree1)
@@ -629,3 +632,6 @@ automaton.auto(exTree15)
 automaton.auto(exTree16)
 automaton.auto(exTree17)
 automaton.auto(exTree18)
+]]
+
+return automaton
