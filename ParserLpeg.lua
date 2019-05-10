@@ -21,9 +21,51 @@ local CSeq = white * lpeg.C("CSeq")
 local spc = lpeg.S(" \t\n")^0
 
 local function node(p)
-	print("entrou em node")
+
   return p  / function(left, op, right)
 	print("oi", op,left, right)
+	print(type(left))
+	if( op=="+") then
+		op = "SUM"
+	end
+	if(op =="-") then
+		op = "SUB"
+	end
+	
+	if(op == "*") then
+		op = "MUL"
+	end
+	if(op == "/") then
+		op = "DIV"
+	end
+
+	if(op == ">") then
+                op = "GT"
+        end
+        if(op == "<") then
+                op = "LT"
+        end
+        if(op == ">=") then
+                op = "GE"
+        end
+        if(op == "<=") then
+                op = "LE"
+        end
+	if(op == "=") then
+                op = "EQ"
+        end
+            
+	if(left == "TRUE" or left =="FALSE") then
+                left = {"BOO",left}
+        end
+
+	if(type(left) == 'string')then
+		print("e string")
+		left={"ID",left}
+		 
+	end        
+	
+	print("pos conversao", op, left, right)
 	if(op==nil and right == nil) then
 		if(type(left)=='number')then
 			return{"NUM",left}
@@ -41,6 +83,16 @@ end
 local function nodeCmd(p)
 	return p / function(op,id,atrib, value)
 	print("oi nodeCmd", op, id, atrib, value)
+	if(id =='=') then
+		value ="ASSIGN"
+		id = {"EQ",id}
+		return{value,op,id, atrib }
+	end
+	if(op=="LOOP") then
+		atrib = atrib
+		
+	end
+
 		return{op,id, atrib, value}
 		
 	end
@@ -48,7 +100,7 @@ end
 
 local calculator = lpeg.P({
   "init",
-  init = lpeg.V("input") + lpeg.V("cmd"),
+  init = lpeg.V("input") + lpeg.V("cmd") ,
   input = lpeg.V("cexp") + lpeg.V("bexp") + lpeg.V("exp"),
   exp =  lpeg.V("term") + lpeg.V("factor") +lpeg.V("aexp") ,
   term =  node((lpeg.V("aexp") * addsub * (lpeg.V("exp")) )),
@@ -57,8 +109,8 @@ local calculator = lpeg.P({
   bexp = node(boolValue +  (lpeg.V("exp") * ( compareEqual+ compare) * lpeg.V("exp"))),
   cexp = node((lpeg.V("bexp") * atrib * lpeg.V("bexp")) + (notValue *(lpeg.V("bexp") + lpeg.V("cexp")))),
   cmd = lpeg.V("assignGr") + lpeg.V("loopGr"),
-  assignGr = nodeCmd(assignValue*spc *lpeg.V("idGr") * spc * igual * lpeg.V("input")),
-  idGr = node(idValue),
+  assignGr = nodeCmd(lpeg.V("idGr") * spc * igual * lpeg.V("input")),
+  idGr = node(idValue) ,
   loopGr = nodeCmd(loopValue * lpeg.V("bexp") * (lpeg.V("exp") + lpeg.V("bexp") + lpeg.V("cmd")))
 })
 
@@ -75,9 +127,14 @@ print((calculator:match(s)))
     for i,v in ipairs(calculator:match(s)) do 
         if (type(v) == 'table') then 
             for t,u in ipairs(v) do
-		
+		if(type(u) == 'table')then
+			for y,z in ipairs(u) do
+				print(y, z)
+			end
+		else		
 		print(t,u) 
 	
+		end
             end
         else
             print(i,v)
