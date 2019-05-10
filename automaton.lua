@@ -39,7 +39,6 @@ loc = require "localization"
 
 local automaton = {}
 
-
 function tLen(T) --Prasaber o tamanho da tabela | serio nao use  # nao eh deterministico
 	if T == nil then
 		return 0
@@ -62,7 +61,7 @@ end
 function push(pile,item)
 	table.insert(pile,item) --como nao tem valor coloca no final
 end
- 
+
 function tPrint(myTable)
 	if myTable==nil then
 		io.write("")
@@ -71,20 +70,27 @@ function tPrint(myTable)
 		for k,v in pairs(myTable) do
 			if type(v) == "table" then
 				tPrint(v)
+				if k ~= tLen(myTable) then 
+					io.write(",")
+				end
 			else
-	    		io.write(v,",")
+	    		if k ~= tLen(myTable) then 
+					io.write(v,",")
+				else 
+					io.write(v)
+				end
 			end
 		end
 		io.write("}")
 	else 
-		io.write(myTable)	
+		--io.write(myTable)	
 	end
 end
 
 function printAutomaton(item,cPile,vPile,env,stor)
 	print("=========================================================================================================================")
 
-	io.write("Item\t: ")
+	io.write("Topo\t: ")
 	tPrint(item)
 	print("")
 	io.write("cPile\t: ")
@@ -465,8 +471,8 @@ end
 
 function handle_ID(item,cPile,vPile,env,stor)
 	idValue = getValue(item)
-	itemLoc = getValue(env[idValue])
-	itemBindded = stor[itemLoc] 
+	itemLoc = getValue(env[idValue][1])
+	itemBindded = stor[itemLoc][1] 
 	push(vPile,itemBindded)
 	automaton.rec(cPile,vPile,env,stor)
 end
@@ -486,10 +492,11 @@ end
 
 function handle_H_ASSIGN(item,cPile,vPile,env,stor)
 	expValue = pop(vPile) 
-	idValue = getValue(pop(vPile))
+	id=pop(vPile)
+	idValue = getValue(id)
 	localization = getLocalization() 
-	env[idValue] = loc.makeLoc(localization)
-	stor[localization] = expValue
+	env[idValue] = {loc.makeLoc(localization),id}
+	stor[localization] = {expValue,id}
 	automaton.rec(cPile,vPile,env,stor)
 end
 
