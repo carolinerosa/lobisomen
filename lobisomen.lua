@@ -1,13 +1,18 @@
 parse = require "ParserLpeg"
 automaton = require "automaton"
 
-print("Por favor entre seu codigo :")
-expressao = io.stdin:read'*l'
+--[[
 
-while (expressao~='exit') do
-    --print("Expressão: ",expressao)
-    automaton.auto(parse.generator(expressao))
-    expressao = io.stdin:read'*l'
-end
+Para se utilizar do lobisomen.lua se utilize o arquivo "entrada.txt" e escreva o codigo que queira rodar lah
 
+]]
+
+
+local f = assert(io.open("entrada.txt", "rb"))
+local entrada = f:read("*all")
+f:close()
+
+print(entrada)
+
+automaton.auto(parse.generator(entrada))
 

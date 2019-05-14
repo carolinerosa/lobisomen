@@ -58,8 +58,8 @@ function pop(pile)
 	end
 end
 
-function push(pile,item)
-	table.insert(pile,item) --como nao tem valor coloca no final
+function push(pile,head)
+	table.insert(pile,head) --como nao tem valor coloca no final
 end
 
 function tPrint(myTable)
@@ -87,11 +87,11 @@ function tPrint(myTable)
 	end
 end
 
-function printAutomaton(item,cPile,vPile,env,stor)
+function printAutomaton(head,cPile,vPile,env,stor)
 	print("=========================================================================================================================")
 
-	io.write("Topo\t: ")
-	tPrint(item)
+	io.write("Head\t: ")
+	tPrint(head)
 	print("")
 	io.write("cPile\t: ")
 	tPrint(cPile)
@@ -117,9 +117,9 @@ function getLocalization() --por enquanto sempre coloca no final do stor
 	return location
 end
 
-function getValue(item) --NUM,BOO,ID,LOC
-	category = item[1]
-	value = item[2]
+function getValue(head) --NUM,BOO,ID,LOC
+	category = head[1]
+	value = head[2]
 	if category == "NUM" then
 		return value
 	elseif category == "BOO" then
@@ -138,21 +138,21 @@ function getValue(item) --NUM,BOO,ID,LOC
 
 end
 
-function getStatement(item)
-	return item[1]
+function getStatement(head)
+	return head[1]
 end
 
-function getFirst(item) --{"Category",value1,value2,value3}
-	return item[2]
+function getFirst(head) --{"Category",value1,value2,value3}
+	return head[2]
 
 end
 
-function getSecond(item)  --{"Category",value1,value2,value3}
-	return item[3]
+function getSecond(head)  --{"Category",value1,value2,value3}
+	return head[3]
 end
 
-function getThird(item)  --{"Category",value1,value2,value3}
-	return item[4]
+function getThird(head)  --{"Category",value1,value2,value3}
+	return head[4]
 end
 
 function makeNode(value,category)
@@ -160,22 +160,22 @@ function makeNode(value,category)
 	return node
 end
 
-function handle_NUM(item,cPile,vPile,env,stor)
-	push(vPile,item)
+function handle_NUM(head,cPile,vPile,env,stor)
+	push(vPile,head)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_SUM(item,cPile,vPile,env,stor)
+function handle_SUM(head,cPile,vPile,env,stor)
 	OP = {"#SUM"}
-	valueA = getFirst(item)
-	valueB = getSecond(item)
+	valueA = getFirst(head)
+	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_H_SUM(item,cPile,vPile,env,stor)--#SUM , soma dos dois primeiros itens em vPile
+function handle_H_SUM(head,cPile,vPile,env,stor)--#SUM , soma dos dois primeiros itens em vPile
 	--vA = pop(vPile)
 	--vB = pop(vPile)
 
@@ -189,17 +189,17 @@ function handle_H_SUM(item,cPile,vPile,env,stor)--#SUM , soma dos dois primeiros
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_SUB(item,cPile,vPile,env,stor)
+function handle_SUB(head,cPile,vPile,env,stor)
 	OP = {"#SUB"}
-	valueA = getFirst(item)
-	valueB = getSecond(item)
+	valueA = getFirst(head)
+	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_H_SUB(item,cPile,vPile,env,stor)
+function handle_H_SUB(head,cPile,vPile,env,stor)
 	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
 	result = valueA - valueB
@@ -207,17 +207,17 @@ function handle_H_SUB(item,cPile,vPile,env,stor)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_MUL(item,cPile,vPile,env,stor)
+function handle_MUL(head,cPile,vPile,env,stor)
 	OP = {"#MUL"}
-	valueA = getFirst(item)
-	valueB = getSecond(item)
+	valueA = getFirst(head)
+	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_H_MUL(item,cPile,vPile,env,stor)
+function handle_H_MUL(head,cPile,vPile,env,stor)
 	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
 	result = valueA * valueB
@@ -225,17 +225,17 @@ function handle_H_MUL(item,cPile,vPile,env,stor)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_DIV(item,cPile,vPile,env,stor)
+function handle_DIV(head,cPile,vPile,env,stor)
 	OP = {"#DIV"}
-	valueA = getFirst(item)
-	valueB = getSecond(item)
+	valueA = getFirst(head)
+	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_H_DIV(item,cPile,vPile,env,stor)
+function handle_H_DIV(head,cPile,vPile,env,stor)
 	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
 	result = valueA / valueB
@@ -243,17 +243,17 @@ function handle_H_DIV(item,cPile,vPile,env,stor)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_EQ(item,cPile,vPile,env,stor)
+function handle_EQ(head,cPile,vPile,env,stor)
 	OP = {"#EQ"}
-	valueA = getFirst(item)
-	valueB = getSecond(item)
+	valueA = getFirst(head)
+	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_H_EQ(item,cPile,vPile,env,stor)
+function handle_H_EQ(head,cPile,vPile,env,stor)
 	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
 	if valueA == valueB then 
@@ -265,17 +265,17 @@ function handle_H_EQ(item,cPile,vPile,env,stor)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_LT(item,cPile,vPile,env,stor)
+function handle_LT(head,cPile,vPile,env,stor)
 	OP = {"#LT"}
-	valueA = getFirst(item)
-	valueB = getSecond(item)
+	valueA = getFirst(head)
+	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_H_LT(item,cPile,vPile,env,stor)
+function handle_H_LT(head,cPile,vPile,env,stor)
 	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
 	if valueA < valueB then 
@@ -287,17 +287,17 @@ function handle_H_LT(item,cPile,vPile,env,stor)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_LE(item,cPile,vPile,env,stor)
+function handle_LE(head,cPile,vPile,env,stor)
 	OP = {"#LE"}
-	valueA = getFirst(item)
-	valueB = getSecond(item)
+	valueA = getFirst(head)
+	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_H_LE(item,cPile,vPile,env,stor)
+function handle_H_LE(head,cPile,vPile,env,stor)
 	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
 	if valueA <= valueB then 
@@ -309,17 +309,17 @@ function handle_H_LE(item,cPile,vPile,env,stor)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_GT(item,cPile,vPile,env,stor)
+function handle_GT(head,cPile,vPile,env,stor)
 	OP = {"#GT"}
-	valueA = getFirst(item)
-	valueB = getSecond(item)
+	valueA = getFirst(head)
+	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_H_GT(item,cPile,vPile,env,stor)
+function handle_H_GT(head,cPile,vPile,env,stor)
 	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
 	if valueA > valueB then 
@@ -331,17 +331,17 @@ function handle_H_GT(item,cPile,vPile,env,stor)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_GE(item,cPile,vPile,env,stor)
+function handle_GE(head,cPile,vPile,env,stor)
 	OP = {"#GE"}
-	valueA = getFirst(item)
-	valueB = getSecond(item)
+	valueA = getFirst(head)
+	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_H_GE(item,cPile,vPile,env,stor)
+function handle_H_GE(head,cPile,vPile,env,stor)
 	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
 	if valueA >= valueB then 
@@ -353,22 +353,22 @@ function handle_H_GE(item,cPile,vPile,env,stor)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_BOO(item,cPile,vPile,env,stor)
-	push(vPile,item)
+function handle_BOO(head,cPile,vPile,env,stor)
+	push(vPile,head)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_AND(item,cPile,vPile,env,stor)
+function handle_AND(head,cPile,vPile,env,stor)
 	OP = {"#AND"}
-	valueA = getFirst(item)
-	valueB = getSecond(item)
+	valueA = getFirst(head)
+	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_H_AND(item,cPile,vPile,env,stor)
+function handle_H_AND(head,cPile,vPile,env,stor)
 	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
 	if valueA and valueB then
@@ -381,17 +381,17 @@ function handle_H_AND(item,cPile,vPile,env,stor)
 end
 
 
-function handle_OR(item,cPile,vPile,env,stor)
+function handle_OR(head,cPile,vPile,env,stor)
 	OP = {"#OR"}
-	valueA = getFirst(item)
-	valueB = getSecond(item)
+	valueA = getFirst(head)
+	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueA)
 	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_H_OR(item,cPile,vPile,env,stor)
+function handle_H_OR(head,cPile,vPile,env,stor)
 	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
 	if valueA or valueB then
@@ -403,15 +403,15 @@ function handle_H_OR(item,cPile,vPile,env,stor)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_NOT(item,cPile,vPile,env,stor)
+function handle_NOT(head,cPile,vPile,env,stor)
 	OP = {"#NOT"}
-	valueA = getFirst(item)
+	valueA = getFirst(head)
 	push(cPile,OP)
 	push(cPile,valueA)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_H_NOT(item,cPile,vPile,env,stor)
+function handle_H_NOT(head,cPile,vPile,env,stor)
 	value = getValue(pop(vPile)) --nesse caso apenas um valor
 	if value then
 		result="FALSE"
@@ -423,11 +423,11 @@ function handle_H_NOT(item,cPile,vPile,env,stor)
 end
 
 
-function handle_LOOP(item,cPile,vPile,env,stor)
+function handle_LOOP(head,cPile,vPile,env,stor)
 	OP={"#LOOP"}
-	booExp= getFirst(item)
+	booExp= getFirst(head)
 
-	push(vPile,item) 		--vai no vPile mesmo
+	push(vPile,head) 		--vai no vPile mesmo
 
 	push(cPile,OP)
 	push(cPile,booExp)
@@ -435,7 +435,7 @@ function handle_LOOP(item,cPile,vPile,env,stor)
 
 end
 
-function handle_H_LOOP(item,cPile,vPile,env,stor)
+function handle_H_LOOP(head,cPile,vPile,env,stor)
 	booValue= getValue(pop(vPile))
 	loop = pop(vPile)
 	if booValue then
@@ -445,11 +445,11 @@ function handle_H_LOOP(item,cPile,vPile,env,stor)
 	end
 end
 
-function handle_COND(item,cPile,vPile,env,stor)
+function handle_COND(head,cPile,vPile,env,stor)
 	OP={"#COND"}
-	booExp= getFirst(item)
+	booExp= getFirst(head)
 
-	push(vPile,item) 
+	push(vPile,head) 
 
 	push(cPile,OP)
 	push(cPile,booExp)
@@ -457,7 +457,7 @@ function handle_COND(item,cPile,vPile,env,stor)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_H_COND(item,cPile,vPile,env,stor)
+function handle_H_COND(head,cPile,vPile,env,stor)
 	booValue= getValue(pop(vPile))
 	cond = pop(vPile)
 	if booValue then --Pega o comando 1 ou o 2 
@@ -469,18 +469,18 @@ function handle_H_COND(item,cPile,vPile,env,stor)
 	end
 end
 
-function handle_ID(item,cPile,vPile,env,stor)
-	idValue = getValue(item)
-	itemLoc = getValue(env[idValue][1])
-	itemBindded = stor[itemLoc][1] 
-	push(vPile,itemBindded)
+function handle_ID(head,cPile,vPile,env,stor)
+	idValue = getValue(head)
+	headLoc = getValue(env[idValue][1])
+	headBindded = stor[headLoc][1] 
+	push(vPile,headBindded)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_ASSIGN(item,cPile,vPile,env,stor)
+function handle_ASSIGN(head,cPile,vPile,env,stor)
 	OP = {"#ASSIGN"}
-	id = getFirst(item)
-	exp = getSecond(item)
+	id = getFirst(head)
+	exp = getSecond(head)
 
 	push(vPile,id)
 
@@ -490,7 +490,7 @@ function handle_ASSIGN(item,cPile,vPile,env,stor)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_H_ASSIGN(item,cPile,vPile,env,stor)
+function handle_H_ASSIGN(head,cPile,vPile,env,stor)
 	expValue = pop(vPile) 
 	id=pop(vPile)
 	idValue = getValue(id)
@@ -500,9 +500,9 @@ function handle_H_ASSIGN(item,cPile,vPile,env,stor)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
-function handle_CSEQ(item,cPile,vPile,env,stor)
-	command1 = getFirst(item)
-	command2 = getSecond(item)
+function handle_CSEQ(head,cPile,vPile,env,stor)
+	command1 = getFirst(head)
+	command2 = getSecond(head)
 	push(cPile,command2)
 	push(cPile,command1)
 	automaton.rec(cPile,vPile,env,stor)
@@ -552,20 +552,20 @@ function automaton.rec(cPile,vPile,env,stor)
 
 		--Comente para a apresentacao
 		print("O resultado foi : ")
-		printAutomaton(item,cPile,vPile,env,stor)
+		printAutomaton(head,cPile,vPile,env,stor)
 
 		return {vPile,stor}
 	else 
 
-		item = pop(cPile)
+		head = pop(cPile)
 
 		--Comente para a apresentacao
-		printAutomaton(item,cPile,vPile,env,stor)
+		printAutomaton(head,cPile,vPile,env,stor)
 
 
-		stat=getStatement(item) --stat para statement, pois pode  ser operacao ou comando
+		stat=getStatement(head) --stat para statement, pois pode  ser operacao ou comando
 
-		handlers[stat](item,cPile,vPile,env,stor)
+		handlers[stat](head,cPile,vPile,env,stor)
 	end
 
 	return {vPile,stor}
@@ -600,7 +600,7 @@ end
 
 --Testes podem ser feitos sem o parser
 
---[[ 
+--[[
 exTree1 = {"SUM",{"NUM",6},{"NUM",2}}
 exTree2 = {"SUB",{"NUM",6},{"NUM",2}}
 exTree3 = {"MUL",{"NUM",6},{"NUM",2}}
