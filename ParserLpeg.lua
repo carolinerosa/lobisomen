@@ -7,22 +7,21 @@ local white = lpeg.S(" \t\r\n") ^ 0
 
 --[[ regras basicas gramatica --]]
 local integer = white * lpeg.R("09") ^ 1 / tonumber
-local muldiv = white * lpeg.C(lpeg.S("/*"))
-local addsub = white * lpeg.C(lpeg.S("+-"))
-local compare = white * lpeg.C(lpeg.S("><"))
-local notValue = white * lpeg.C("NOT")
-local igual = white * lpeg.C("=")
-local atrib = white * (lpeg.C("=") + lpeg.C("AND") + lpeg.C("OR"))
-local compareEqual = white * (lpeg.C(">=") + lpeg.C("<="))
-local boolValue = white * (lpeg.C("TRUE") + lpeg.C("FALSE"))
+local multDivValue = white * lpeg.C(lpeg.S("/*"))
+local addSubValue = white * lpeg.C(lpeg.S("+-"))
+local notValue = white * lpeg.C("Not")
+local igual = white * lpeg.C(":=")
+local compare = white * lpeg.C("==")
+local andOr = white * (lpeg.C("and") + lpeg.C("or"))
+local compareEqual = white * (lpeg.C(">=") + lpeg.C("<=") + lpeg.C(lpeg.S("><")))
+local boolValue = white * (lpeg.C("True") + lpeg.C("False"))
 
 
 --[[regras para id e comandos --]]
 local idValue = white * (lpeg.R("az")) ^1 
-local assignValue = white * lpeg.C("ASSIGN")
-local loopValue = white * lpeg.C("LOOP")
-local cseqValue = white * lpeg.C("CSEQ")
-local condValue = white * lpeg.C("COND")
+local loopValue = white * lpeg.C("While")
+--local cseqValue = white * lpeg.C("CSEQ")
+--local condValue = white * lpeg.C("COND")
 local spc = lpeg.S(" \t\n")^0
 
 local function node(p)
@@ -61,16 +60,30 @@ local function node(p)
                 op = "LE"
         end
 
-	if(op == "=") then
+	if(op == "==") then
                 op = "EQ"
         end
+
+	if(op == "==") then
+                op = "EQ"
+        end
+
+	if(op == ":=") then
+                op = "ASSIGN"
+        end
+
+	if(left =="While") then
+		left = "LOOP"
+		return { left, op, right}
+	end
+
         
 	--[[ inclusao do tipo BOO --]]
-	if(left == "TRUE" or left =="FALSE") then
+	if(left == "True" or left =="False") then
                 left = {"BOO",left}
         end
 
-	if(left == "NOT") then
+	if(left == "Not") then
                 return{left,op, right}
         end
 
@@ -80,7 +93,7 @@ local function node(p)
 	
 	--[[ inclusao do tipo ID --]]
 	if(type(left) == 'string')then
-		--print("e string")
+		print("e string: ", left)
 		left={"ID",left}
 		 
 	end        
@@ -112,41 +125,44 @@ local function nodeCmd(p)
 	end
 end
 
-local calculator = lpeg.P({
-  "init",
-  init = lpeg.V("cmd") + lpeg.V("input") ,
-  input = lpeg.V("cexp") + lpeg.V("bexp") + lpeg.V("exp"),
-  exp =  lpeg.V("term") + lpeg.V("factor") +lpeg.V("aexp") ,
-  term =  node((lpeg.V("aexp") * addsub * (lpeg.V("exp")) )),
-  factor =node(( lpeg.V("aexp") * muldiv *  (lpeg.V("exp") ) )  ),
-  aexp = node( (spc*"(" * lpeg.V("exp") * ")" * spc ) +integer + idValue),
-  bexp = node(boolValue +  (lpeg.V("exp") * ( compareEqual+ compare) * lpeg.V("exp"))+ lpeg.V("notGr")),
-  notGr = node(notValue *spc * spc*  lpeg.V("bexp")),
-  cexp = node((lpeg.V("bexp") * atrib * lpeg.V("bexp")) + (notValue *(lpeg.V("bexp") + lpeg.V("cexp")))),
-  cmd = lpeg.V("assignGr") + lpeg.V("loopGr") + lpeg.V("csegGr") + lpeg.V("condGr"),
-  assignGr = nodeCmd(lpeg.V("idGr") * spc * igual * lpeg.V("input")),
-  idGr = node(idValue) ,
-  loopGr = nodeCmd(loopValue * lpeg.V("bexp") * (lpeg.V("cmd") + lpeg.V("bexp") + lpeg.V("exp"))),
-  csegGr = nodeCmd(cseqValue * (lpeg.V("cmd") + lpeg.V("bexp") + lpeg.V("exp")) * (lpeg.V("cmd")+ lpeg.V("bexp") + lpeg.V("exp"))),
-  condGr = nodeCmd(condValue * lpeg.V("bexp") *(lpeg.V("cmd") + lpeg.V("bexp") + lpeg.V("exp")) * (lpeg.V("cmd")+ lpeg.V("bexp") + lpeg.V("exp")))
+
+local transformImp = lpeg.P({
+	"s",
+	s = lpeg.V("cmd"),
+	cmd = lpeg.V("assign") + lpeg.V("loop") + lpeg.V("exp"),
+	loop = node(loopValue * spc * lpeg.V("exp") * spc * "do" * spc * lpeg.V("cmd")),
+	assign = node(lpeg.V("id") * igual *lpeg.V("exp")),
+	exp = lpeg.V("boolExp") + lpeg.V("aritExp"),
+	boolExp = lpeg.V("negation") + lpeg.V("equality") +  lpeg.V("parentesisExp") + lpeg.V("conjunctionDis") + lpeg.V("compareEq") + lpeg.V("bool"),
+	negation = node(notValue *spc * lpeg.V("boolExp")),
+	equality = node(lpeg.V("aritExp") * compare * lpeg.V("exp")),
+	conjunctionDis = node( (lpeg.V("negation") + lpeg.V("equality") + lpeg.V("compareEq") + lpeg.V("aritExp")) * andOr * (lpeg.V("boolExp") + lpeg.V("bool"))),
+	compareEq = node(lpeg.V("aritExp") * compareEqual * lpeg.V("aritExp")),
+	aritExp = lpeg.V("addSub")  + lpeg.V("multExp") + lpeg.V("multDiv"),
+	addSub = node(lpeg.V("multExp") * addSubValue * lpeg.V("aritExp")),
+	multExp = lpeg.V("multDiv") + lpeg.V("atom") + lpeg.V("parentesisExp"),
+	multDiv = node(lpeg.V("atom") * multDivValue * lpeg.V("multExp")),
+	parentesisExp = "(" * spc * lpeg.V("boolExp") * spc * ")",
+	atom = node(integer + lpeg.V("bool") +  lpeg.V("id")),
+	bool = node(boolValue),
+	id = node(idValue)
+
 })
 
-local comands = lpeg.P({
-	"cmd",
-	cmd = lpeg.V("assignGr") + lpeg.V("loopGr"),
-	assignGr =node(idValue * addsub * idValue ),
-	loopGr = node (integer * addsub * integer)
-})
-
-function parse.generator(s)
- return calculator:match(s)
-   --[[ print((calculator:match(s)))
-      for i,v in ipairs(calculator:match(s)) do 
+function generator(s)
+ -- calculator:match(s)
+    print((transformImp:match(s)))
+      for i,v in ipairs(transformImp:match(s)) do 
           if (type(v) == 'table') then 
               for t,u in ipairs(v) do
   		if(type(u) == 'table')then
   			for y,z in ipairs(u) do
   				print(y, z)
+if(type(z) == 'table')then
+				for k,l in ipairs(z) do
+  					print(k,l)
+end
+				end
   			end
   		else		
   		print(t,u) 
@@ -156,18 +172,18 @@ function parse.generator(s)
           else
               print(i,v)
           end
-      end]] 
+      end
 end
 
---[[
+
 expressao = io.stdin:read'*l'
 while (expressao~='exit') do
     print("Expressão: ",expressao)
     generator(expressao)
     expressao = io.stdin:read'*l'
 end
-]]
+
 --Olhar COND & LOOP podendo receber expressoes boleanasem vez de bools
 --Tudo que recebe uma bool pode receber uma expressao boleana
 
-return parse
+--return parse
