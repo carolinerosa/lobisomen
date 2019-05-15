@@ -1,5 +1,7 @@
 lpeg=require "lpeg"
 
+require "power"
+
 parse = {}
 
 local white = lpeg.S(" \t\r\n") ^ 0
@@ -23,6 +25,25 @@ local loopValue = white * lpeg.C("While")
 --local cseqValue = white * lpeg.C("CSEQ")
 --local condValue = white * lpeg.C("COND")
 local spc = lpeg.S(" \t\n")^0
+
+a = array.new(1000)
+    print(a)               --> userdata: 0x8064d48
+    print(array.size(a))   --> 1000
+    for i=1,1000 do
+      array.set(a, i, 1/i)
+    end
+    print(array.get(a, 10))  --> 0.1
+
+
+function each(o)
+   local e = o:GetEnumerator()
+   return function()
+      if e:MoveNext() then
+        return e.Current
+     end
+   end
+end
+
 
 local function node(p)
 
@@ -124,12 +145,79 @@ local function nodeCmd(p)
 		
 	end
 end
+local function teste(p)
+	return p / function(op, um, doi, tres)
+		
+		print("estamos no teste",op, um, doi, tres)
+		for u,v in ipairs(op) do
+			if (type(v) == 'table') then 
+				for t,u in ipairs(v) do
+			  		if(type(u) == 'table')then
+  						for y,z in ipairs(u) do
+			  				print(y, z)
+							if(type(z) == 'table')then
+								for k,l in ipairs(z) do
+  									print(k,l)
+								end
+							end
+			  			end
+				  	else		
+				  		print(t,u) 
+  	
+  					end
+             		 	end
+          		else
+              			print(u,v)
+			end
+	         end
+
+		return {op}
+	end
+end
+
+local function testeUp(p)
+	return p / function(op, um, doi, tres)
+		print("estamos no teste2: ",op, um, doi, tres)
+		print("este e o  p",p, array.size(p))
+		luaL_openlib(L, "array", arraylib, 0);
+		print(inspect(getmetatable(p)))
+		for x in each (p) do
+		print("tentandooo", x)
+		print(inspect(getmetatable(p)))
+		end
+			
+
+		for u,v in ipairs(op) do
+			if (type(v) == 'table') then 
+				for t,u in ipairs(v) do
+			  		if(type(u) == 'table')then
+  						for y,z in ipairs(u) do
+			  				print(y, z)
+							if(type(z) == 'table')then
+								for k,l in ipairs(z) do
+  									print(k,l)
+								end
+							end
+			  			end
+				  	else		
+				  		print(t,u) 
+  	
+  					end
+             		 	end
+          		else
+              			print(u,v)
+			end
+	         end
+		saida = {op,um, doi, tres}
+		return saida
+	end
+end
 
 
 local transformImp = lpeg.P({
 	"s",
-	s = lpeg.V("cmd"),
-	cmd = lpeg.V("assign") + lpeg.V("loop") + lpeg.V("exp"),
+	s = testeUp(lpeg.V("cmd")^1),
+	cmd = ((lpeg.V("assign") + lpeg.V("loop") + lpeg.V("exp")) * (white + -1)),
 	loop = node(loopValue * spc * lpeg.V("exp") * spc * "do" * spc * lpeg.V("cmd")),
 	assign = node(lpeg.V("id") * igual *lpeg.V("exp")),
 	exp = lpeg.V("boolExp") + lpeg.V("aritExp"),
@@ -149,10 +237,11 @@ local transformImp = lpeg.P({
 
 })
 
-function generator(s)
- -- calculator:match(s)
-    print((transformImp:match(s)))
-      for i,v in ipairs(transformImp:match(s)) do 
+function parse.generator(s)
+	print("Entrou aqui", s)
+--	return transformImp:match(s)
+  print((transformImp:match("3 + 2\n4 + 7")))
+--[[      for i,v in ipairs(transformImp:match("3 + 2\n4 + 7")) do 
           if (type(v) == 'table') then 
               for t,u in ipairs(v) do
   		if(type(u) == 'table')then
@@ -172,18 +261,21 @@ end
           else
               print(i,v)
           end
-      end
+      end--]]
+
+return transformImp:match(s)
 end
 
-
+--[[
 expressao = io.stdin:read'*l'
 while (expressao~='exit') do
     print("Expressão: ",expressao)
     generator(expressao)
     expressao = io.stdin:read'*l'
 end
-
+--]]
 --Olhar COND & LOOP podendo receber expressoes boleanasem vez de bools
 --Tudo que recebe uma bool pode receber uma expressao boleana
 
---return parse
+return parse
+

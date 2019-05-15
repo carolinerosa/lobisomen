@@ -1,0 +1,92 @@
+
+#include <lua.h>                               /* Always include this */
+#include <lauxlib.h>                           /* Always include this */
+#include <lualib.h>                            /* Always include this */
+#define luaL_reg	luaL_Reg
+#define luaL_openlib  luaL_Openlib
+typedef struct NumArray {
+      int size;
+      double values[1];  /* variable part */
+    } NumArray;
+
+
+void *lua_newuserdata (lua_State *L, size_t size);
+
+static int newarray (lua_State *L) {
+      int n = luaL_checkint(L, 1);
+      size_t nbytes = sizeof(NumArray) + (n - 1)*sizeof(double);
+      NumArray *a = (NumArray *)lua_newuserdata(L, nbytes);
+      a->size = n;
+      return 1;  /* new userdatum is already on the stack */
+    }
+
+static int setarray (lua_State *L) {
+      NumArray *a = (NumArray *)lua_touserdata(L, 1);
+      int index = luaL_checkint(L, 2);
+      double value = luaL_checknumber(L, 3);
+    
+      luaL_argcheck(L, a != NULL, 1, "`array' expected");
+    
+      luaL_argcheck(L, 1 <= index && index <= a->size, 2,
+                       "index out of range");
+    
+      a->values[index-1] = value;
+      return 0;
+    }
+
+static int getsize (lua_State *L) {
+      NumArray *a = (NumArray *)lua_touserdata(L, 1);
+      luaL_argcheck(L, a != NULL, 1, "`array' expected");
+      lua_pushnumber(L, a->size);
+      return 1;
+    }
+
+static int getarray (lua_State *L) {
+      NumArray *a = (NumArray *)lua_touserdata(L, 1);
+      int index = luaL_checkint(L, 2);
+    
+      luaL_argcheck(L, a != NULL, 1, "`array' expected");
+    
+      luaL_argcheck(L, 1 <= index && index <= a->size, 2,
+                       "index out of range");
+    
+      lua_pushnumber(L, a->values[index-1]);
+      return 1;
+}
+
+
+static const struct luaL_reg arraylib [] = {
+      {"new", newarray},
+      {"set", setarray},
+      {"get", getarray},
+      {"size", getsize},
+      {NULL, NULL}
+    };
+
+
+
+static int isquare(lua_State *L){              /* Internal name of func */
+	float rtrn = lua_tonumber(L, -1);      /* Get the single number arg */
+	printf("Top of square(), nbr=%f\n",rtrn);
+	lua_pushnumber(L,rtrn*rtrn);           /* Push the return */
+	return 1;                              /* One return value */
+}
+static int icube(lua_State *L){                /* Internal name of func */
+	float rtrn = lua_tonumber(L, -1);      /* Get the single number arg */
+	printf("Top of cube(), number=%f\n",rtrn);
+	lua_pushnumber(L,rtrn*rtrn*rtrn);      /* Push the return */
+	return 1;                              /* One return value */
+}
+int luaopen_power(lua_State *L){
+	lua_register(
+			L,               /* Lua state variable */
+			"square",        /* func name as known in Lua */
+			isquare          /* func name in this file */
+			);  
+	lua_register(L,"cube",icube);
+	return 0;
+}
+int luaopen_array (lua_State *L) {
+      luaL_openlib(L, "array", arraylib, 0);
+      return 1;
+    }
