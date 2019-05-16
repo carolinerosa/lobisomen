@@ -9,8 +9,11 @@
 4 >= 3
 True and 4 < 3
 False or 4 > 3
-NOT 5 < 6
+Not 5 < 6
 bola := 3 
 bola + 4
-
+te:= 0
+While (te > 3) do 
+te := 8
+5 + 7
 

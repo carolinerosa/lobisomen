@@ -1,6 +1,5 @@
 lpeg=require "lpeg"
 
-require "power"
 
 parse = {}
 
@@ -22,33 +21,14 @@ local boolValue = white * (lpeg.C("True") + lpeg.C("False"))
 --[[regras para id e comandos --]]
 local idValue = white * (lpeg.R("az")) ^1 
 local loopValue = white * lpeg.C("While")
---local cseqValue = white * lpeg.C("CSEQ")
---local condValue = white * lpeg.C("COND")
 local spc = lpeg.S(" \t\n")^0
-
-a = array.new(1000)
-    print(a)               --> userdata: 0x8064d48
-    print(array.size(a))   --> 1000
-    for i=1,1000 do
-      array.set(a, i, 1/i)
-    end
-    print(array.get(a, 10))  --> 0.1
-
-
-function each(o)
-   local e = o:GetEnumerator()
-   return function()
-      if e:MoveNext() then
-        return e.Current
-     end
-   end
-end
 
 
 local function node(p)
 
-  return p  / function(left, op, right)
+  return p  / function(left, op, right,...)
 	--[[ inclusao do tipo de op --]]
+--	print("NODE",left,op,right, um, dois)
 	if( op=="+") then
 		op = "SUM"
 	end
@@ -95,7 +75,7 @@ local function node(p)
 
 	if(left =="While") then
 		left = "LOOP"
-		return { left, op, right}
+		return { left, op, {right ,...}}
 	end
 
         
@@ -105,7 +85,15 @@ local function node(p)
         end
 
 	if(left == "Not") then
-                return{left,op, right}
+                return{"NOT",op, right}
+        end
+
+	if(op == "and") then
+                return{"AND",left, right}
+        end
+
+	if(op == "or") then
+                return{"OR",left, right}
         end
 
 
@@ -133,92 +121,60 @@ local function node(p)
   end
 end
 
-local function nodeCmd(p)
-	return p / function(op,id,atrib, value)
 
-		if(id =='=') then
-			value ="ASSIGN"
-			return{value,op, atrib }
+local function impFinal(p)
+	return p / function(...)
+		local arg={...}		
+		local resp;
+		--print("este e o  p",#arg)
+		if(#arg >1) then
+			atual = #arg -1
+			resp = {"CSEQ",arg[atual], arg[atual+1]} 
+			atual = atual -1
+			while atual>0 do
+				resp = {"CSEQ",arg[atual], resp} 
+				atual = atual -1
+			end
+		else
+			resp = arg[1]
 		end
-
-		return{op,id, atrib, value}
-		
-	end
-end
-local function teste(p)
-	return p / function(op, um, doi, tres)
-		
-		print("estamos no teste",op, um, doi, tres)
-		for u,v in ipairs(op) do
+		for h,v in ipairs(arg) do
 			if (type(v) == 'table') then 
 				for t,u in ipairs(v) do
 			  		if(type(u) == 'table')then
   						for y,z in ipairs(u) do
-			  				print(y, z)
+			  				--print("filho1",t,y, z)
 							if(type(z) == 'table')then
 								for k,l in ipairs(z) do
-  									print(k,l)
+  									--print("filho2",y,k,l)
+									if(type(l) == 'table')then
+										for q,w in ipairs(l) do
+		  									--print("filho3",k,q,w)
+										end
+									end
 								end
 							end
 			  			end
 				  	else		
-				  		print(t,u) 
+				  		--print(t,u) 
   	
   					end
              		 	end
           		else
-              			print(u,v)
+              			--print(h,v)
 			end
 	         end
+		return resp
+	end 
 
-		return {op}
-	end
-end
-
-local function testeUp(p)
-	return p / function(op, um, doi, tres)
-		print("estamos no teste2: ",op, um, doi, tres)
-		print("este e o  p",p, array.size(p))
-		luaL_openlib(L, "array", arraylib, 0);
-		print(inspect(getmetatable(p)))
-		for x in each (p) do
-		print("tentandooo", x)
-		print(inspect(getmetatable(p)))
-		end
-			
-
-		for u,v in ipairs(op) do
-			if (type(v) == 'table') then 
-				for t,u in ipairs(v) do
-			  		if(type(u) == 'table')then
-  						for y,z in ipairs(u) do
-			  				print(y, z)
-							if(type(z) == 'table')then
-								for k,l in ipairs(z) do
-  									print(k,l)
-								end
-							end
-			  			end
-				  	else		
-				  		print(t,u) 
-  	
-  					end
-             		 	end
-          		else
-              			print(u,v)
-			end
-	         end
-		saida = {op,um, doi, tres}
-		return saida
-	end
 end
 
 
 local transformImp = lpeg.P({
 	"s",
-	s = testeUp(lpeg.V("cmd")^1),
+	s = impFinal(lpeg.V("cmd")^1),
 	cmd = ((lpeg.V("assign") + lpeg.V("loop") + lpeg.V("exp")) * (white + -1)),
-	loop = node(loopValue * spc * lpeg.V("exp") * spc * "do" * spc * lpeg.V("cmd")),
+	loop = node(loopValue * spc * lpeg.V("exp") * spc * "do" * spc * (lpeg.V("cmd")^1) ),
 	assign = node(lpeg.V("id") * igual *lpeg.V("exp")),
 	exp = lpeg.V("boolExp") + lpeg.V("aritExp"),
 	boolExp = lpeg.V("negation") + lpeg.V("equality") +  lpeg.V("parentesisExp") + lpeg.V("conjunctionDis") + lpeg.V("compareEq") + lpeg.V("bool"),
@@ -238,9 +194,9 @@ local transformImp = lpeg.P({
 })
 
 function parse.generator(s)
-	print("Entrou aqui", s)
+	--print("Entrou aqui", s)
 --	return transformImp:match(s)
-  print((transformImp:match("3 + 2\n4 + 7")))
+  --print((transformImp:match("3 + 2\n4 + 7")))
 --[[      for i,v in ipairs(transformImp:match("3 + 2\n4 + 7")) do 
           if (type(v) == 'table') then 
               for t,u in ipairs(v) do
