@@ -12,7 +12,5 @@ local f = assert(io.open("entrada.txt", "rb"))
 local entrada = f:read("*all")
 f:close()
 
-print(entrada)
-
 automaton.auto(parse.generator(entrada))
 

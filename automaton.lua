@@ -73,7 +73,7 @@ function tPrint(myTable)
 				if k ~= tLen(myTable) then 
 					io.write(",")
 				end
-			else
+			elsef
 	    		if k ~= tLen(myTable) then 
 					io.write(v,",")
 				else 
@@ -124,9 +124,11 @@ function getValue(head) --NUM,BOO,ID,LOC
 		return value
 	elseif category == "BOO" then
 		if value == "TRUE" then
-			return true
+			value = true
+			return value
 		elseif value == "FALSE" then
-			return false
+			value = false
+			return value
 		else
 			print("Erro em valor de Booleana")
 		end
@@ -135,7 +137,7 @@ function getValue(head) --NUM,BOO,ID,LOC
 	elseif category == "LOC" then
 		return value	 	
 	end
-
+	return value
 end
 
 function getStatement(head)
@@ -551,6 +553,7 @@ function automaton.rec(cPile,vPile,env,stor)
 	if tLen(cPile) == 0 then
 
 		--Comente para a apresentacao
+		head = {}--apenas limpando o Head para a impressao do resultado.
 		print("O resultado foi : ")
 		printAutomaton(head,cPile,vPile,env,stor)
 
