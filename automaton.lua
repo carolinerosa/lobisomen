@@ -73,8 +73,8 @@ function tPrint(myTable)
 				if k ~= tLen(myTable) then 
 					io.write(",")
 				end
-			elsef
-	    		if k ~= tLen(myTable) then 
+			else
+				if k ~= tLen(myTable) then 
 					io.write(v,",")
 				else 
 					io.write(v)
@@ -137,7 +137,8 @@ function getValue(head) --NUM,BOO,ID,LOC
 	elseif category == "LOC" then
 		return value	 	
 	end
-	return value
+
+	print("Eh de um tipo nao implementado ou com erro")
 end
 
 function getStatement(head)
@@ -440,11 +441,14 @@ end
 function handle_H_LOOP(head,cPile,vPile,env,stor)
 	booValue= getValue(pop(vPile))
 	loop = pop(vPile)
+
 	if booValue then
 		command = getSecond(loop)
 		push(cPile,loop)
 		push(cPile,command)
 	end
+
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_COND(head,cPile,vPile,env,stor)
@@ -469,6 +473,7 @@ function handle_H_COND(head,cPile,vPile,env,stor)
 		command = getThird(cond)
 		push(cPile,command)
 	end
+	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_ID(head,cPile,vPile,env,stor)
@@ -603,7 +608,6 @@ end
 
 --Testes podem ser feitos sem o parser
 
---[[
 exTree1 = {"SUM",{"NUM",6},{"NUM",2}}
 exTree2 = {"SUB",{"NUM",6},{"NUM",2}}
 exTree3 = {"MUL",{"NUM",6},{"NUM",2}}
@@ -622,7 +626,7 @@ exTree15 = {"LOOP", exTree11 , exTree3}
 exTree16 = {"CSEQ", exTree13 , {"SUM",{"ID","bola"},{"NUM",2}} }
 exTree17 = {"AND",{"BOO","TRUE"},{"NUM",3}}
 exTree18 = {"CSEQ", {"ASSIGN", {"ID", "bola"}, {"NUM",3}}  , {"ASSIGN", {"ID", "ogro"}, {"NUM",7}} }
-
+exTree19 = {"CSEQ", exTree13 , {"LOOP", {"GT",{"ID","bola"},{"NUM",0}} , {"SUB",{"ID","bola"},{"NUM",1}}} }
 
 automaton.auto(exTree1)
 automaton.auto(exTree2)
@@ -642,6 +646,6 @@ automaton.auto(exTree15)
 automaton.auto(exTree16)
 automaton.auto(exTree17)
 automaton.auto(exTree18)
-]]
+automaton.auto(exTree19)
 
 return automaton
