@@ -478,6 +478,7 @@ end
 
 function handle_ID(head,cPile,vPile,env,stor)
 	idValue = getValue(head)
+	idValue = idValue:gsub("%s", "")
 	headLoc = getValue(env[idValue][1])
 	headBindded = stor[headLoc][1] 
 	push(vPile,headBindded)
@@ -501,8 +502,12 @@ function handle_H_ASSIGN(head,cPile,vPile,env,stor)
 	expValue = pop(vPile) 
 	id=pop(vPile)
 	idValue = getValue(id)
-	localization = getLocalization() 
-	env[idValue] = {loc.makeLoc(localization),id}
+	idValue = idValue:gsub("%s", "")
+	if (env[idValue]==nil) then
+		localization = getLocalization() 
+		env[idValue] = {loc.makeLoc(localization),id}		
+	end
+	localization = getValue(env[idValue][1])
 	stor[localization] = {expValue,id}
 	automaton.rec(cPile,vPile,env,stor)
 end
@@ -607,7 +612,7 @@ end
 
 
 --Testes podem ser feitos sem o parser
-
+--[[
 exTree1 = {"SUM",{"NUM",6},{"NUM",2}}
 exTree2 = {"SUB",{"NUM",6},{"NUM",2}}
 exTree3 = {"MUL",{"NUM",6},{"NUM",2}}
@@ -647,5 +652,5 @@ automaton.auto(exTree16)
 automaton.auto(exTree17)
 automaton.auto(exTree18)
 automaton.auto(exTree19)
-
+--]]
 return automaton
