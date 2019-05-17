@@ -1,0 +1,21 @@
+limite:= 5 + 8 + 9
+
+while (limite <= 55) do
+limite:= limite +90;
+
+if (4 > 98) then
+8+7
+else 
+9 + 6;
+
+Not (limite>9)
+Not (True or False)
+9 >8 or 7>=7
+(7 >= 0) and True
+
+z := 1 
+y := 10 
+while Not (y == 0) do 
+            z := z * y
+            y := y - 1
+;
