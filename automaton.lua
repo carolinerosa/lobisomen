@@ -179,9 +179,6 @@ function handle_SUM(head,cPile,vPile,env,stor)
 end
 
 function handle_H_SUM(head,cPile,vPile,env,stor)--#SUM , soma dos dois primeiros itens em vPile
-	--vA = pop(vPile)
-	--vB = pop(vPile)
-
 	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
 
@@ -574,7 +571,6 @@ function automaton.rec(cPile,vPile,env,stor)
 
 		--Comente para a apresentacao
 		printAutomaton(head,cPile,vPile,env,stor)
-
 
 		stat=getStatement(head) --stat para statement, pois pode  ser operacao ou comando
 

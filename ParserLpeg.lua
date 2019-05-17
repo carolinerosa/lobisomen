@@ -151,20 +151,20 @@ end
 transformType =
     {
         ["+"]=typeSum,
-	["-"]=typeSub,
-	["*"]=typeMul,
-	["/"]=typeDiv,
-	[">"]=typeGT,
-	["<"]=typeLT,
-	[">="]=typeGE,
-	["<="]=typeLE,
-	["=="]=typeEQ,
-	[":="]=typeAssign,
-	["while"]=typeWhile,
-	["if"]=typeIf,
-	["Not"]=typeNot,
-	["and"]=typeAnd,
-	["or"] =typeOr
+      	["-"]=typeSub,
+      	["*"]=typeMul,
+      	["/"]=typeDiv,
+      	[">"]=typeGT,
+      	["<"]=typeLT,
+      	[">="]=typeGE,
+      	["<="]=typeLE,
+      	["=="]=typeEQ,
+      	[":="]=typeAssign,
+      	["while"]=typeWhile,
+      	["if"]=typeIf,
+      	["Not"]=typeNot,
+      	["and"]=typeAnd,
+      	["or"] =typeOr
     }
 	
 

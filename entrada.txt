@@ -1,6 +1,1 @@
-z := 1 
-y := 10 
-while Not (y == 0) do 
-            z := z * y
-            y := y - 1
-;
+limite:= 5 + 8 + 9
