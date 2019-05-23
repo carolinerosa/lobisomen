@@ -432,7 +432,6 @@ function handle_LOOP(head,cPile,vPile,env,stor)
 	push(cPile,OP)
 	push(cPile,booExp)
 	automaton.rec(cPile,vPile,env,stor)
-
 end
 
 function handle_H_LOOP(head,cPile,vPile,env,stor)
@@ -594,7 +593,7 @@ end
 
 
 --Testes podem ser feitos sem o parser
-
+--[[
 exTree1 = {"SUM",{"NUM",6},{"NUM",2}}
 exTree2 = {"SUB",{"NUM",6},{"NUM",2}}
 exTree3 = {"MUL",{"NUM",6},{"NUM",2}}
@@ -614,7 +613,7 @@ exTree16 = {"CSEQ", exTree13 , {"SUM",{"ID","bola"},{"NUM",2}} }
 exTree17 = {"AND",{"BOO","TRUE"},{"NUM",3}}
 exTree18 = {"CSEQ", {"ASSIGN", {"ID", "bola"}, {"NUM",3}}  , {"ASSIGN", {"ID", "ogro"}, {"NUM",7}} }
 exTree19 = {"CSEQ", exTree13 , {"LOOP", {"GT",{"ID","bola"},{"NUM",0}} , {"SUB",{"ID","bola"},{"NUM",1}}} }
-
+]]
 --[[
 automaton.auto(exTree1)
 automaton.auto(exTree2)
@@ -629,12 +628,14 @@ automaton.auto(exTree10)
 automaton.auto(exTree11)
 automaton.auto(exTree12)
 automaton.auto(exTree13)
-]]
+
 --automaton.auto(exTree14)
 --automaton.auto(exTree15)
 --automaton.auto(exTree16)
 --automaton.auto(exTree17)
-automaton.auto(exTree18)
+--automaton.auto(exTree18)
 --automaton.auto(exTree19)
+]]
+
 
 return automaton
