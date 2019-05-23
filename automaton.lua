@@ -173,14 +173,14 @@ function handle_SUM(head,cPile,vPile,env,stor)
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueA)
 	push(cPile,valueB)
+	push(cPile,valueA)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_SUM(head,cPile,vPile,env,stor)--#SUM , soma dos dois primeiros itens em vPile
-	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
+	valueA = getValue(pop(vPile))
 
 	result = valueA + valueB
 	node= makeNode(result,"NUM")
@@ -194,14 +194,14 @@ function handle_SUB(head,cPile,vPile,env,stor)
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueA)
 	push(cPile,valueB)
+	push(cPile,valueA)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_SUB(head,cPile,vPile,env,stor)
-	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
+	valueA = getValue(pop(vPile))
 	result = valueA - valueB
 	push(vPile,makeNode(result,"NUM"))
 	automaton.rec(cPile,vPile,env,stor)
@@ -212,14 +212,14 @@ function handle_MUL(head,cPile,vPile,env,stor)
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueA)
 	push(cPile,valueB)
+	push(cPile,valueA)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_MUL(head,cPile,vPile,env,stor)
-	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
+	valueA = getValue(pop(vPile))
 	result = valueA * valueB
 	push(vPile,makeNode(result,"NUM"))
 	automaton.rec(cPile,vPile,env,stor)
@@ -230,14 +230,14 @@ function handle_DIV(head,cPile,vPile,env,stor)
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueA)
 	push(cPile,valueB)
+	push(cPile,valueA)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_DIV(head,cPile,vPile,env,stor)
-	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
+	valueA = getValue(pop(vPile))
 	result = valueA / valueB
 	push(vPile,makeNode(result,"NUM"))
 	automaton.rec(cPile,vPile,env,stor)
@@ -248,14 +248,14 @@ function handle_EQ(head,cPile,vPile,env,stor)
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueA)
 	push(cPile,valueB)
+	push(cPile,valueA)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_EQ(head,cPile,vPile,env,stor)
-	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
+	valueA = getValue(pop(vPile))
 	if valueA == valueB then 
 		result = "TRUE"
 	else
@@ -270,14 +270,14 @@ function handle_LT(head,cPile,vPile,env,stor)
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueA)
 	push(cPile,valueB)
+	push(cPile,valueA)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_LT(head,cPile,vPile,env,stor)
-	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
+	valueA = getValue(pop(vPile))
 	if valueA < valueB then 
 		result = "TRUE"
 	else
@@ -292,14 +292,14 @@ function handle_LE(head,cPile,vPile,env,stor)
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueA)
 	push(cPile,valueB)
+	push(cPile,valueA)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_LE(head,cPile,vPile,env,stor)
-	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
+	valueA = getValue(pop(vPile))
 	if valueA <= valueB then 
 		result = "TRUE"
 	else
@@ -314,14 +314,14 @@ function handle_GT(head,cPile,vPile,env,stor)
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueA)
 	push(cPile,valueB)
+	push(cPile,valueA)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_GT(head,cPile,vPile,env,stor)
-	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
+	valueA = getValue(pop(vPile))
 	if valueA > valueB then 
 		result = "TRUE"
 	else
@@ -336,14 +336,14 @@ function handle_GE(head,cPile,vPile,env,stor)
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueA)
 	push(cPile,valueB)
+	push(cPile,valueA)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_GE(head,cPile,vPile,env,stor)
-	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
+	valueA = getValue(pop(vPile))
 	if valueA >= valueB then 
 		result = "TRUE"
 	else
@@ -363,14 +363,14 @@ function handle_AND(head,cPile,vPile,env,stor)
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueA)
 	push(cPile,valueB)
+	push(cPile,valueA)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_AND(head,cPile,vPile,env,stor)
-	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
+	valueA = getValue(pop(vPile))
 	if valueA and valueB then
 		result="TRUE"
 	else
@@ -386,14 +386,14 @@ function handle_OR(head,cPile,vPile,env,stor)
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueA)
 	push(cPile,valueB)
+	push(cPile,valueA)
 	automaton.rec(cPile,vPile,env,stor)
 end
 
 function handle_H_OR(head,cPile,vPile,env,stor)
-	valueA = getValue(pop(vPile))
 	valueB = getValue(pop(vPile))
+	valueA = getValue(pop(vPile))
 	if valueA or valueB then
 		result="TRUE"
 	else
@@ -557,19 +557,17 @@ handlers =
 
 --Funcao recursiva simples que apenas ve o que eh pedido e envia para outra funcao
 function automaton.rec(cPile,vPile,env,stor)
-	if tLen(cPile) == 0 then
+	if tLen(cPile) == 0 then  
 
-		--Comente para a apresentacao
 		head = {}--apenas limpando o Head para a impressao do resultado.
 		print("O resultado foi : ")
 		printAutomaton(head,cPile,vPile,env,stor)
 
-		return {vPile,stor}
+		return
 	else 
 
 		head = pop(cPile)
 
-		--Comente para a apresentacao
 		printAutomaton(head,cPile,vPile,env,stor)
 
 		stat=getStatement(head) --stat para statement, pois pode  ser operacao ou comando
@@ -577,7 +575,7 @@ function automaton.rec(cPile,vPile,env,stor)
 		handlers[stat](head,cPile,vPile,env,stor)
 	end
 
-	return {vPile,stor}
+	return
 end
 
 function automaton.auto(tree)
@@ -586,29 +584,17 @@ function automaton.auto(tree)
 	vPile={} 	--value pile
 	env={} 	 	--enviroment
 	stor={}   	--storage
-	--loc.init() 	--inicializando o loc para cada programa, soh comentar caso nao queira resetar ele 
+	loc.init() 	--inicializando o loc 
 
 	push(cPile,tree)
 
-	result = automaton.rec(cPile,vPile,env,stor)
-
-	finalVPile =  result[1]
-	finalStor = result[2]
-
-	--Impressao bonitinha de teoricamente o que tinhamos que exibir. Recomendo comentar caso vah se utilizar das outras visualizacoes
-	--[[
-	print("\n O estado final da Pilha de  valores  foi:")
-	tPrint(finalVPile)
-	print("\n\n O estado final da Memoria foi: ")
-	tPrint(finalStor)
-	print()
-	]]
+	automaton.rec(cPile,vPile,env,stor)
 
 end
 
 
 --Testes podem ser feitos sem o parser
---[[
+
 exTree1 = {"SUM",{"NUM",6},{"NUM",2}}
 exTree2 = {"SUB",{"NUM",6},{"NUM",2}}
 exTree3 = {"MUL",{"NUM",6},{"NUM",2}}
@@ -629,6 +615,7 @@ exTree17 = {"AND",{"BOO","TRUE"},{"NUM",3}}
 exTree18 = {"CSEQ", {"ASSIGN", {"ID", "bola"}, {"NUM",3}}  , {"ASSIGN", {"ID", "ogro"}, {"NUM",7}} }
 exTree19 = {"CSEQ", exTree13 , {"LOOP", {"GT",{"ID","bola"},{"NUM",0}} , {"SUB",{"ID","bola"},{"NUM",1}}} }
 
+--[[
 automaton.auto(exTree1)
 automaton.auto(exTree2)
 automaton.auto(exTree3)
@@ -642,11 +629,12 @@ automaton.auto(exTree10)
 automaton.auto(exTree11)
 automaton.auto(exTree12)
 automaton.auto(exTree13)
-automaton.auto(exTree14)
-automaton.auto(exTree15)
-automaton.auto(exTree16)
-automaton.auto(exTree17)
+]]
+--automaton.auto(exTree14)
+--automaton.auto(exTree15)
+--automaton.auto(exTree16)
+--automaton.auto(exTree17)
 automaton.auto(exTree18)
-automaton.auto(exTree19)
---]]
+--automaton.auto(exTree19)
+
 return automaton
