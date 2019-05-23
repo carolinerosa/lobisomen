@@ -246,10 +246,10 @@ end
 local transformImp = lpeg.P({
 	"s",
 	s = impFinal(lpeg.V("cmd")^1),
-	cmd = ((lpeg.V("assign") + lpeg.V("loop") +lpeg.V("cond")+ lpeg.V("exp") ) * (white + -1)),
-	loop = node(loopValue * spc * lpeg.V("exp") * spc * "do" * spc * (lpeg.V("cmd")^1) ) * spc *";",
+	cmd = ((lpeg.V("assign") + lpeg.V("loop") +lpeg.V("cond") ) * (white + -1)),
+	loop = node(loopValue * spc * lpeg.V("exp") * spc * "do" * spc * (lpeg.V("cmd")^1) ) * spc *"end",
 	assign = node(lpeg.V("id") * igual *lpeg.V("exp")),
-	cond = node(condValue * spc * lpeg.V("exp") * spc * "then" * (spc * (lpeg.V("cmd")^1))^0 * spc * (elseValue * spc * (lpeg.V("cmd")^1))^0 * spc * ";"),
+	cond = node(condValue * spc * lpeg.V("exp") * spc * "then" * (spc * (lpeg.V("cmd")^1))^0 * spc * (elseValue * spc * (lpeg.V("cmd")^1))^0 * spc * "end"),
 	exp = (lpeg.V("boolExp") + lpeg.V("aritExp")) ,
 	boolExp = lpeg.V("negation") + lpeg.V("equality") + lpeg.V("conjunctionDis") + lpeg.V("compareEq") + lpeg.V("bool") +  lpeg.V("parentesisExp"),
 	negation = node(notValue *spc * lpeg.V("boolExp")),

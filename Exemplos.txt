@@ -1,17 +1,19 @@
 limite:= 5 + 8 + 9
 
 while (limite <= 55) do
-limite:= limite +90;
+limite:= limite +90
+end
 
 input := 103
-if (inut > 98) then
+if (input > 98) then
 input:= input+10
 else 
-input:= input+ 6;
+input:= input+ 6
+end
 
 z := 1 
 y := 10 
 while Not (y == 0) do 
             z := z * y
             y := y - 1
-;
+end

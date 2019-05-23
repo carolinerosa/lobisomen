@@ -7,8 +7,14 @@ install:
 	sudo apt install luarocks
 	@echo ">>install lpeg"
 	sudo luarocks install lpeg
-run:
+
+compile:
 	@echo ">>execução do Lobisomen"
 	lua lobisomen.lua
 
-
+reset:
+	@echo ">>removendo dependências"
+	sudo apt remove luarocks
+	sudo apt remove lua5.2
+	sudo apt remove lua-sec
+	sudo apt remove lua-socket
