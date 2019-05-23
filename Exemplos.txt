@@ -3,15 +3,11 @@ limite:= 5 + 8 + 9
 while (limite <= 55) do
 limite:= limite +90;
 
-if (4 > 98) then
-8+7
+input := 103
+if (inut > 98) then
+input:= input+10
 else 
-9 + 6;
-
-Not (limite>9)
-Not (True or False)
-9 >8 or 7>=7
-(7 >= 0) and True
+input:= input+ 6;
 
 z := 1 
 y := 10 
