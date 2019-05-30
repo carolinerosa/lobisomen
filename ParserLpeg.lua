@@ -25,6 +25,10 @@ local condValue = white * lpeg.C("if")
 local elseValue = white * lpeg.C("else")
 local spc = lpeg.S(" \t\n")^0
 
+--[[regras de let delref valref--]]
+local letValue = white * lpeg.C("let")
+local varValue = white * lpeg.C("var")
+
 function typeSum()
 	return "SUM"
 end
@@ -148,6 +152,36 @@ function typeOr(left, op, right,...)
 	end
 	return{"OR",left, right}
 end
+
+function typeVar(left, op, right,...)
+	
+	right = {"Ref",right}
+	return{"BIND",op,  right}
+end
+
+
+function typeLet(left, op, right, ...)
+
+
+
+	left = "BLK"
+	local arg={right,...}	
+	local resp = right
+	--print("temos x comandos: ", #arg)
+	if(#arg >1) then
+		atual = #arg -1
+		resp = {"CSEQ",arg[atual], arg[atual+1]} 
+		atual = atual -1
+		while atual>0 do
+			resp = {"CSEQ",arg[atual], resp} 
+			atual = atual -1
+		end
+	else
+		resp = arg[1]
+	end
+	return { left,{op, resp}}
+end
+
 transformType =
     {
         ["+"]=typeSum,
@@ -164,7 +198,9 @@ transformType =
       	["if"]=typeIf,
       	["Not"]=typeNot,
       	["and"]=typeAnd,
-      	["or"] =typeOr
+      	["or"] =typeOr,
+	["let"] = typeLet,
+	["var"]=typeVar
     }
 	
 
@@ -180,11 +216,11 @@ local function node(p)
 		end
 		op= transformType[op]()
 	end	
-
+	
 
 	if(type(left) == "string") then
 		
-		if(left=="while" or left == "if" or left == "Not" and( left ~="or" and left~="and"))then
+		if(left=="while" or left == "if" or left == "Not" or left=="var" or left=="let" and( left ~="or" and left~="and"))then
 			--print("e ", left)			
 			return transformType[left](left, op, right, ...)
 		end
@@ -246,7 +282,9 @@ end
 local transformImp = lpeg.P({
 	"s",
 	s = impFinal(lpeg.V("cmd")^1),
-	cmd = ((lpeg.V("assign") + lpeg.V("loop") +lpeg.V("cond") ) * (white + -1)),
+	cmd = (lpeg.V("let")+(lpeg.V("assign") + lpeg.V("loop") +lpeg.V("cond") ) * (white + -1)),
+	let = node(letValue * spc * lpeg.V("var") * spc *"in" * spc * lpeg.V("cmd")^1 *spc* "end"),
+	var = node(varValue * spc * lpeg.V("id") *spc* spc* "=" * spc* lpeg.V("exp")),
 	loop = node(loopValue * spc * lpeg.V("exp") * spc * "do" * spc * (lpeg.V("cmd")^1) ) * spc *"end",
 	assign = node(lpeg.V("id") * igual *lpeg.V("exp")),
 	cond = node(condValue * spc * lpeg.V("exp") * spc * "then" * (spc * (lpeg.V("cmd")^1))^0 * spc * (elseValue * spc * (lpeg.V("cmd")^1))^0 * spc * "end"),
