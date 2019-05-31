@@ -609,13 +609,26 @@ end
 
 function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)
 	--δ(#BLKDEC :: C, E' :: V, E, S, L) = δ(C, E :: V, E / E', S, L),
-
+	--O E' representado ai era pra falar de uma lista de mapas, mas como nao teremosuma varias declaracoes, teremos apenas 1 mapa
+	--Este mapa eh deixado pelo BIND,
+	--Temos que pegar o enviroment na pilha de valores e entao fazer E/E' que no caso soh significa pegar o mapa e atualizar o E
+	--Note o mapa esta no formato {"MAP",id,loc}, usamos o valor de id para indexar o loc (lembre de usar o getValue,getFirst e getSecond)
 
 	automaton.rec(cPile,vPile,env,stor,bLocks)
 end
 
 function handle_H_BLKCMD(head,cPile,vPile,env,stor,bLocs)
 	--δ(#BLKCMD :: C, E :: L :: V, E', S, L') = δ(C, V, E, S', L), where S' = S / L.
+	--Note que temos um E e um  L  na  pilha de valores, 
+	--O L foi colocado pelo handle_BLK, para voltarmos ao contexto  antes  do bloco ser iniciado
+	--O E foi colocado pelo handle_H_BLKDEC, para tambemvoltarmoso  ambiente para o que ele era antes
+	--Temos que desempilhar L e E
+	--Atualizar bLocs de L' para L
+	--E por ultimo algo que passe pelo store e cheque se o index do stor equivale ao valor de um dos locs em L
+	--Ex : stor[1]="bola" stor[2]="figo" stor[3]="cabra" stor[4]="bala"  L={1,2,3} (lembrando que nao sao numerosapenas mas {"LOC",<valor>},entao getValue)
+	--     S' deve ser : stor[1]="bola" stor[2]="figo" stor[3]="cabra".
+	--Lembre-se  que temor for i,v in pairs(mytable) do  , onde o i eh o index e v eh o valor, isso facilita
+
 
 	automaton.rec(cPile,vPile,env,stor,bLocks)
 end
