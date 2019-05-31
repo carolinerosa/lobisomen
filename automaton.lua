@@ -475,8 +475,8 @@ end
 function handle_ID(head,cPile,vPile,env,stor,bLocs)
 	idValue = getValue(head)
 	idValue = idValue:gsub("%s", "")
-	headLoc = getValue(env[idValue][1])
-	headBindded = stor[headLoc][1] 
+	headLoc = getValue(env[idValue])
+	headBindded = stor[headLoc] 
 	push(vPile,headBindded)
 	automaton.rec(cPile,vPile,env,stor,bLocks)
 end
@@ -488,7 +488,7 @@ function handle_ASSIGN(head,cPile,vPile,env,stor,bLocs)
 
 	push(vPile,id)
 
-	push(cPile,OP) 		
+	push(cPile,OP)	
 	push(cPile,exp)
 
 	automaton.rec(cPile,vPile,env,stor,bLocks)
@@ -499,12 +499,10 @@ function handle_H_ASSIGN(head,cPile,vPile,env,stor,bLocs)
 	id=pop(vPile)
 	idValue = getValue(id)
 	idValue = idValue:gsub("%s", "")
-	if (env[idValue]==nil) then
-		localization = getLocalization() 
-		env[idValue] = {loc.makeLoc(localization),id}		
-	end
-	localization = getValue(env[idValue][1])
-	stor[localization] = {expValue,id}
+
+	localization = getValue(env[idValue])
+	stor[localization] = expValue												
+
 	automaton.rec(cPile,vPile,env,stor,bLocks)
 end
 
@@ -529,6 +527,17 @@ function handle_REF(head,cPile,vPile,env,stor,bLocs)
 end
 
 function handle_H_REF(head,cPile,vPile,env,stor,bLocs)
+	locValue = getLocalization()	--valor da location em  si,sendo criado
+	locVar = loc.makeLoc(locValue)	--{"LOC",locValue}, nosso formato de Location
+
+	expResp = pop(vPile)			--Pegamos o  resultado da expressao colocada pelo REF
+
+	stor[locValue] = expResp		--E a salvamos na memoria, ligada pela nova location
+
+	push(bLocs,locVar) 				--Atualizando o Bloco de Locations com a locaion nova
+
+	push(vPile,locVar)				--Empilhamos uma Localization na pilhade valores
+
 	automaton.rec(cPile,vPile,env,stor,bLocks)
 end
 
@@ -536,7 +545,7 @@ function handle_DEREF(head,cPile,vPile,env,stor,bLocs)
 	id=getFirst(head)
 	idvalue=getValue(id)
 
-	envData=env[idValue]
+	envData=env[idValue] 			--nao pegamos o valor pois devolve no formato que estiver, usualmente  LOC
 	push(vPile,envData)
 
 	automaton.rec(cPile,vPile,env,stor,bLocks)
@@ -546,7 +555,10 @@ function handle_VALREF(head,cPile,vPile,env,stor,bLocs)
 	id=getFirst(head)
 	idvalue=getValue(id)
 
-	storData=stor[stor[env[idValue]]]
+	envVal=getValue(env[idValue]) 	--Nesses dois abaixo temos que pegar o valor contido no lugar para ele poder ser usado como referencia
+	storVal=getValue(stor[envVal])
+	storData=stor[storVal] 			--equivale a stor[stor[env[idvalue]]]
+
 	push(vPile,storData)
 
 	automaton.rec(cPile,vPile,env,stor,bLocks)
@@ -566,35 +578,45 @@ function handle_BIND(head,cPile,vPile,env,stor,bLocs)
 end
 
 function handle_H_BIND(head,cPile,vPile,env,stor,bLocs)
+	--δ(#BIND :: C, B :: W :: V, E, S, L) = δ(C, [W ↦ B] :: V, E, S, L), 
+	bindable = pop(vPile)			--Este usualmente serah uma location que o REF terah deixado
+	id = pop(vPile)
+
+	map = {"MAP", id, bindable}		--Para manter o formato padrao nos utilizamos do formato que indica {"tipo de dado",left,right}
+	push(vPile,map)					--entao este eh empilhado na pilha de valores para  ser usado pelo BLK
+
 	automaton.rec(cPile,vPile,env,stor,bLocks)
 end
 
 function handle_BLK(head,cPile,vPile,env,stor,bLocs)
-	OPdec = "#BLKDEC"
-	OPcmd = "#BLKCMD"
+	--δ(Blk(D, M) :: C, V, E, S, L) = δ(D :: #BLKDEC :: M :: #BLKCMD :: C, L :: V, E, S, ∅),
+	OPdec = {"#BLKDEC"}
+	OPcmd = {"#BLKCMD"}
 	dec = getFirst(head)
 	cmd = getSecond(head)
 
-	push(OPcmd,cPile)
+	push(OPcmd,cPile)		--Empilhando  #BLKCMD e M
 	push(cmd,cPile)
 
-	push(OPdec,cPile)
+	push(OPdec,cPile)		--Empilhando  #BLKDEC e D
 	push(dec,cPile)
 
-	push(bLocs,vPile)
+	push(bLocs,vPile)		--Temos que colocar o conteudo do bLocs no vPile, e depois deixa-lo vazio
+	bLocs = {}
 
-	automaton.rec(cPile,vPile,env,stor,bLocks)
-end
-
-function handle_H_BLK(head,cPile,vPile,env,stor,bLocs)
 	automaton.rec(cPile,vPile,env,stor,bLocks)
 end
 
 function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)
+	--δ(#BLKDEC :: C, E' :: V, E, S, L) = δ(C, E :: V, E / E', S, L),
+
+
 	automaton.rec(cPile,vPile,env,stor,bLocks)
 end
 
 function handle_H_BLKCMD(head,cPile,vPile,env,stor,bLocs)
+	--δ(#BLKCMD :: C, E :: L :: V, E', S, L') = δ(C, V, E, S', L), where S' = S / L.
+
 	automaton.rec(cPile,vPile,env,stor,bLocks)
 end
 
@@ -642,7 +664,6 @@ handlers =
         ["BIND"]=handle_BIND,
         ["#BIND"]=handle_H_BIND,
         ["BLK"]=handle_BLK,
-        ["#BLK"]=handle_H_BLK,
         ["#BLKDEC"]=handle_H_BLKDEC,
         ["#BLKCMD"]=handle_H_BLKCMD
         --["CNS"]=handle_CNS       	Em vez de apontar pra uma location, aponta para um numero
