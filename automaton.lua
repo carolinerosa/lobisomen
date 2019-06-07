@@ -59,6 +59,8 @@ function pop(pile)
 end
 
 function push(pile,head)
+
+	print("tipo: ", type(pile), type(head))
 	table.insert(pile,head) --como nao tem valor coloca no final
 end
 
@@ -693,7 +695,7 @@ function automaton.rec(cPile,vPile,env,stor,bLocks)
 
 		return
 	else 
-
+		print("Estamos aqui")
 		head = pop(cPile)
 
 		printAutomaton(head,cPile,vPile,env,stor,bLocs)
@@ -715,7 +717,7 @@ function automaton.auto(tree)
 	bLocks={} 	--Block Locations
 	--print={} 	--Print List
 	loc.init() 	--inicializando o loc 
-
+	print("tipo: ", type(tree), type(cPile))
 	push(cPile,tree)
 
 	automaton.rec(cPile,vPile,env,stor,bLocks)

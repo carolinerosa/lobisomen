@@ -1,1 +1,9 @@
-limite:= 5 + 8 + 9
+let var z = *ji
+in 
+	
+        while Not (y == 0)
+        do 
+            z := z * 4
+            
+	end
+end
