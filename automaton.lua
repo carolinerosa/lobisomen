@@ -56,6 +56,7 @@ function pop(pile)
 		table.remove(pile,lastIndex)
 		return value
 	end
+	return nil
 end
 
 
@@ -94,7 +95,7 @@ function push(pile,head)
 	
 end
 
-function printAutomaton(head,cPile,vPile,env,stor,bLocks)
+function printAutomaton(head,cPile,vPile,env,stor,bLocs)
 	print("=========================================================================================================================")
 
 	io.write("Head\t: ")
@@ -112,8 +113,8 @@ function printAutomaton(head,cPile,vPile,env,stor,bLocks)
 	io.write("Stor\t: ")
 	tPrint(stor)
 	print("")
-	io.write("bLocks\t: ")
-	tPrint(bLocks)
+	io.write("bLocs\t: ")
+	tPrint(bLocs)
 	print("")
 
 	print("=========================================================================================================================")
@@ -173,22 +174,22 @@ function makeNode(value,category)
 	return node
 end
 
-function handle_NUM(head,cPile,vPile,env,stor,bLocks)
+function handle_NUM(head,cPile,vPile,env,stor,bLocs)
 	push(vPile,head)
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_SUM(head,cPile,vPile,env,stor,bLocks)
+function handle_SUM(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#SUM"}
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueB)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_SUM(head,cPile,vPile,env,stor,bLocks)--#SUM , soma dos dois primeiros itens em vPile
+function handle_H_SUM(head,cPile,vPile,env,stor,bLocs)--#SUM , soma dos dois primeiros itens em vPile
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
 
@@ -196,74 +197,74 @@ function handle_H_SUM(head,cPile,vPile,env,stor,bLocks)--#SUM , soma dos dois pr
 	node= makeNode(result,"NUM")
 
 	push(vPile,node)
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_SUB(head,cPile,vPile,env,stor,bLocks)
+function handle_SUB(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#SUB"}
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueB)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_SUB(head,cPile,vPile,env,stor,bLocks)
+function handle_H_SUB(head,cPile,vPile,env,stor,bLocs)
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
 	result = valueA - valueB
 	push(vPile,makeNode(result,"NUM"))
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_MUL(head,cPile,vPile,env,stor,bLocks)
+function handle_MUL(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#MUL"}
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueB)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_MUL(head,cPile,vPile,env,stor,bLocks)
+function handle_H_MUL(head,cPile,vPile,env,stor,bLocs)
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
 	result = valueA * valueB
 	push(vPile,makeNode(result,"NUM"))
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_DIV(head,cPile,vPile,env,stor,bLocks)
+function handle_DIV(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#DIV"}
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueB)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_DIV(head,cPile,vPile,env,stor,bLocks)
+function handle_H_DIV(head,cPile,vPile,env,stor,bLocs)
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
 	result = valueA / valueB
 	push(vPile,makeNode(result,"NUM"))
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_EQ(head,cPile,vPile,env,stor,bLocks)
+function handle_EQ(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#EQ"}
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueB)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_EQ(head,cPile,vPile,env,stor,bLocks)
+function handle_H_EQ(head,cPile,vPile,env,stor,bLocs)
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
 	if valueA == valueB then 
@@ -272,20 +273,20 @@ function handle_H_EQ(head,cPile,vPile,env,stor,bLocks)
 		result = "FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_LT(head,cPile,vPile,env,stor,bLocks)
+function handle_LT(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#LT"}
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueB)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_LT(head,cPile,vPile,env,stor,bLocks)
+function handle_H_LT(head,cPile,vPile,env,stor,bLocs)
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
 	if valueA < valueB then 
@@ -294,20 +295,20 @@ function handle_H_LT(head,cPile,vPile,env,stor,bLocks)
 		result = "FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_LE(head,cPile,vPile,env,stor,bLocks)
+function handle_LE(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#LE"}
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueB)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_LE(head,cPile,vPile,env,stor,bLocks)
+function handle_H_LE(head,cPile,vPile,env,stor,bLocs)
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
 	if valueA <= valueB then 
@@ -316,20 +317,20 @@ function handle_H_LE(head,cPile,vPile,env,stor,bLocks)
 		result = "FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_GT(head,cPile,vPile,env,stor,bLocks)
+function handle_GT(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#GT"}
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueB)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_GT(head,cPile,vPile,env,stor,bLocks)
+function handle_H_GT(head,cPile,vPile,env,stor,bLocs)
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
 	if valueA > valueB then 
@@ -338,20 +339,20 @@ function handle_H_GT(head,cPile,vPile,env,stor,bLocks)
 		result = "FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_GE(head,cPile,vPile,env,stor,bLocks)
+function handle_GE(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#GE"}
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueB)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_GE(head,cPile,vPile,env,stor,bLocks)
+function handle_H_GE(head,cPile,vPile,env,stor,bLocs)
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
 	if valueA >= valueB then 
@@ -360,25 +361,25 @@ function handle_H_GE(head,cPile,vPile,env,stor,bLocks)
 		result = "FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_BOO(head,cPile,vPile,env,stor,bLocks)
+function handle_BOO(head,cPile,vPile,env,stor,bLocs)
 	push(vPile,head)
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_AND(head,cPile,vPile,env,stor,bLocks)
+function handle_AND(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#AND"}
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueB)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_AND(head,cPile,vPile,env,stor,bLocks)
+function handle_H_AND(head,cPile,vPile,env,stor,bLocs)
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
 	if valueA and valueB then
@@ -387,21 +388,21 @@ function handle_H_AND(head,cPile,vPile,env,stor,bLocks)
 		result="FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
 
-function handle_OR(head,cPile,vPile,env,stor,bLocks)
+function handle_OR(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#OR"}
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueB)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_OR(head,cPile,vPile,env,stor,bLocks)
+function handle_H_OR(head,cPile,vPile,env,stor,bLocs)
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
 	if valueA or valueB then
@@ -410,18 +411,18 @@ function handle_H_OR(head,cPile,vPile,env,stor,bLocks)
 		result="FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_NOT(head,cPile,vPile,env,stor,bLocks)
+function handle_NOT(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#NOT"}
 	valueA = getFirst(head)
 	push(cPile,OP)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_NOT(head,cPile,vPile,env,stor,bLocks)
+function handle_H_NOT(head,cPile,vPile,env,stor,bLocs)
 	value = getValue(pop(vPile)) --nesse caso apenas um valor
 	if value then
 		result="FALSE"
@@ -429,11 +430,11 @@ function handle_H_NOT(head,cPile,vPile,env,stor,bLocks)
 		result="TRUE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
 
-function handle_LOOP(head,cPile,vPile,env,stor,bLocks)
+function handle_LOOP(head,cPile,vPile,env,stor,bLocs)
 	OP={"#LOOP"}
 	booExp= getFirst(head)
 
@@ -441,10 +442,10 @@ function handle_LOOP(head,cPile,vPile,env,stor,bLocks)
 
 	push(cPile,OP)
 	push(cPile,booExp)
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_LOOP(head,cPile,vPile,env,stor,bLocks)
+function handle_H_LOOP(head,cPile,vPile,env,stor,bLocs)
 	booValue= getValue(pop(vPile))
 	loop = pop(vPile)
 
@@ -454,10 +455,10 @@ function handle_H_LOOP(head,cPile,vPile,env,stor,bLocks)
 		push(cPile,command)
 	end
 
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_COND(head,cPile,vPile,env,stor,bLocks)
+function handle_COND(head,cPile,vPile,env,stor,bLocs)
 	OP={"#COND"}
 	booExp= getFirst(head)
 
@@ -466,10 +467,10 @@ function handle_COND(head,cPile,vPile,env,stor,bLocks)
 	push(cPile,OP)
 	push(cPile,booExp)
 
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_COND(head,cPile,vPile,env,stor,bLocks)
+function handle_H_COND(head,cPile,vPile,env,stor,bLocs)
 	booValue= getValue(pop(vPile))
 	cond = pop(vPile)
 	if booValue then --Pega o comando 1 ou o 2 
@@ -479,19 +480,19 @@ function handle_H_COND(head,cPile,vPile,env,stor,bLocks)
 		command = getThird(cond)
 		push(cPile,command)
 	end
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_ID(head,cPile,vPile,env,stor,bLocks)
+function handle_ID(head,cPile,vPile,env,stor,bLocs)
 	idValue = getValue(head)
 	idValue = idValue:gsub("%s", "")
 	headLoc = getValue(env[idValue])
 	headBindded = stor[headLoc] 
 	push(vPile,headBindded)
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_ASSIGN(head,cPile,vPile,env,stor,bLocks)
+function handle_ASSIGN(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#ASSIGN"}
 	id = getFirst(head)
 	exp = getSecond(head)
@@ -501,10 +502,10 @@ function handle_ASSIGN(head,cPile,vPile,env,stor,bLocks)
 	push(cPile,OP)	
 	push(cPile,exp)
 
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_ASSIGN(head,cPile,vPile,env,stor,bLocks)
+function handle_H_ASSIGN(head,cPile,vPile,env,stor,bLocs)
 	expValue = pop(vPile) 
 	id=pop(vPile)
 	idValue = getValue(id)
@@ -513,30 +514,30 @@ function handle_H_ASSIGN(head,cPile,vPile,env,stor,bLocks)
 	localization = getValue(env[idValue])
 	stor[localization] = expValue												
 
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_CSEQ(head,cPile,vPile,env,stor,bLocks)
+function handle_CSEQ(head,cPile,vPile,env,stor,bLocs)
 	command1 = getFirst(head)
 	command2 = getSecond(head)
 	push(cPile,command2)
 	push(cPile,command1)
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
 ------------------------------Parte 2------------------------------------------
 
-function handle_REF(head,cPile,vPile,env,stor,bLocks)
+function handle_REF(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#REF"}
 	exp = getFirst(head)
 
 	push(cPile,OP)
 	push(cPile,exp)
 
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_REF(head,cPile,vPile,env,stor,bLocks)
+function handle_H_REF(head,cPile,vPile,env,stor,bLocs)
 
 	locValue = getLocalization()	--valor da location em  si,sendo criado
 	locVar = loc.makeLoc(locValue)	--{"LOC",locValue}, nosso formato de Location
@@ -546,23 +547,23 @@ function handle_H_REF(head,cPile,vPile,env,stor,bLocks)
 	stor[locValue] = {expResp}		--E a salvamos na memoria, ligada pela nova location
 	print("bam,os ver")
 	tPrint(stor)
-	push(bLocks,locVar) 				--Atualizando o Bloco de Locations com a locaion nova
+	push(bLocs,locVar) 				--Atualizando o Bloco de Locations com a locaion nova
 
 	push(vPile,locVar)				--Empilhamos uma Localization na pilhade valores
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_DEREF(head,cPile,vPile,env,stor,bLocks)
+function handle_DEREF(head,cPile,vPile,env,stor,bLocs)
 	id=getFirst(head)
 	idvalue=getValue(id)
 
 	envData=env[idValue] 			--nao pegamos o valor pois devolve no formato que estiver, usualmente  LOC
 	push(vPile,envData)
 
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_VALREF(head,cPile,vPile,env,stor,bLocks)
+function handle_VALREF(head,cPile,vPile,env,stor,bLocs)
 	id=getFirst(head)
 	idvalue=getValue(id)
 
@@ -572,10 +573,10 @@ function handle_VALREF(head,cPile,vPile,env,stor,bLocks)
 
 	push(vPile,storData)
 
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_BIND(head,cPile,vPile,env,stor,bLocks)
+function handle_BIND(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#BIND"}
 	id = getFirst(head)
 	exp = getSecond(head)
@@ -585,21 +586,32 @@ function handle_BIND(head,cPile,vPile,env,stor,bLocks)
 	push(cPile, OP)
 	push(cPile,exp)
 
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_BIND(head,cPile,vPile,env,stor,bLocks)
+function handle_H_BIND(head,cPile,vPile,env,stor,bLocs)
 	--δ(#BIND :: C, B :: W :: V, E, S, L) = δ(C, [W ↦ B] :: V, E, S, L), 
 	bindable = pop(vPile)			--Este usualmente serah uma location que o REF terah deixado
 	id = pop(vPile)
+	H = pop(vPile)
+	newEnv = {}								--Onde criaremos um enviroment novo ou uniremos ENVs
 
-	map = {"MAP", id, bindable}		--Para manter o formato padrao nos utilizamos do formato que indica {"tipo de dado",left,right}
-	push(vPile,map)					--entao este eh empilhado na pilha de valores para  ser usado pelo BLK
+	if (H=nil) then 						--Se for  nulo ou nao for envi, apenas criamos um novo ENV
+		newEnv = {"ENV",{[getValue(id)]=bindable}} --Nao precisamos empilhar nada
+	elseif  (getStatement(H) ~="ENV") then
+		push(H,vPile) 						--deve ser devolvido antes de tudo, pois nao serah interagido
+		newEnv = {"ENV",{[getValue(id)]=bindable}}
+	else
+		newEnv = getValue(H)				--Salvamos o env que estaria em H no newEnv
+		newEnv[getValue(id)] = bindable 	--Depois o atualizamos com o que ha  de novo.
+	end
 
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	push(vPile,newEnv)					--entao este eh empilhado na pilha de valores para  ser usado pelo BLK
+
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_BLK(head,cPile,vPile,env,stor,bLocks)
+function handle_BLK(head,cPile,vPile,env,stor,bLocs)
 	--δ(Blk(D, M) :: C, V, E, S, L) = δ(D :: #BLKDEC :: M :: #BLKCMD :: C, L :: V, E, S, ∅),
 	OPdec = {"#BLKDEC"}
 	OPcmd = {"#BLKCMD"}
@@ -612,23 +624,24 @@ function handle_BLK(head,cPile,vPile,env,stor,bLocks)
 	push(cPile,OPdec)		--Empilhando  #BLKDEC e D
 	push(cPile,dec)
 
-	if(tLen(bLocks) > 0)then
-	push(vPile,bLocks)
+	if(tLen(bLocs) > 0)then
+		push(vPile,bLocs)
 	end	
-		--Temos que colocar o conteudo do bLocks no vPile, e depois deixa-lo vazio
-	bLocks = {}
+		--Temos que colocar o conteudo do bLocs no vPile, e depois deixa-lo vazio
+	bLocs = {}
 
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocks)
-	print("Vamnos executar o blkdec")
+function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)	--LEMBRE o ENV empilhado ta na forma {"ENV",{<Aqui eh o env de verdade}}, 
+	print("Vamnos executar o blkdec")						--ou seja, chame getValue na variavel que segurar o env da pilhade valores
 
-	tPrint(vPile)
 	--δ(#BLKDEC :: C, E' :: V, E, S, L) = δ(C, E :: V, E / E', S, L),
+	tPrint(vPile)
 	map = pop(vPile)
 	tPrint(map)
-	
+
+
 		if(type(env[map[2][2]]) == "table") then 
 			env[map[2][2]] ={map[3],map[2]}
 		else
@@ -641,24 +654,24 @@ function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocks)
 	--Temos que pegar o enviroment na pilha de valores e entao fazer E/E' que no caso soh significa pegar o mapa e atualizar o E
 	--Note o mapa esta no formato {"MAP",id,loc}, usamos o valor de id para indexar o loc (lembre de usar o getValue,getFirst e getSecond)
 
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_BLKCMD(head,cPile,vPile,env,stor,bLocks)
+function handle_H_BLKCMD(head,cPile,vPile,env,stor,bLocs)
 	print("ta na hora de fazer o blkcmd")
 	--δ(#BLKCMD :: C, E :: L :: V, E', S, L') = δ(C, V, E, S', L), where S' = S / L.
 	--Note que temos um E e um  L  na  pilha de valores, 
 	--O L foi colocado pelo handle_BLK, para voltarmos ao contexto  antes  do bloco ser iniciado
 	--O E foi colocado pelo handle_H_BLKDEC, para tambemvoltarmoso  ambiente para o que ele era antes
 	--Temos que desempilhar L e E
-	--Atualizar bLocks de L' para L
+	--Atualizar bLocs de L' para L
 	--E por ultimo algo que passe pelo store e cheque se o index do stor equivale ao valor de um dos locs em L
 	--Ex : stor[1]="bola" stor[2]="figo" stor[3]="cabra" stor[4]="bala"  L={1,2,3} (lembrando que nao sao numerosapenas mas {"LOC",<valor>},entao getValue)
 	--     S' deve ser : stor[1]="bola" stor[2]="figo" stor[3]="cabra".
 	--Lembre-se  que temor for i,v in pairs(mytable) do  , onde o i eh o index e v eh o valor, isso facilita
 
 
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
 handlers =
@@ -712,23 +725,23 @@ handlers =
     }
 
 --Funcao recursiva simples que apenas ve o que eh pedido e envia para outra funcao
-function automaton.rec(cPile,vPile,env,stor,bLocks)
+function automaton.rec(cPile,vPile,env,stor,bLocs)
 	if tLen(cPile) == 0 then  
 
 		head = {}--apenas limpando o Head para a impressao do resultado.
 		print("O resultado foi : ")
-		printAutomaton(head,cPile,vPile,env,stor,bLocks)
+		printAutomaton(head,cPile,vPile,env,stor,bLocs)
 
 		return
 	else 
 
 		head = pop(cPile)
 
-		printAutomaton(head,cPile,vPile,env,stor,bLocks)
+		printAutomaton(head,cPile,vPile,env,stor,bLocs)
 
 		stat=getStatement(head) --stat para statement, pois pode  ser operacao ou comando
 
-		handlers[stat](head,cPile,vPile,env,stor,bLocks)
+		handlers[stat](head,cPile,vPile,env,stor,bLocs)
 	end
 
 	return
@@ -740,13 +753,13 @@ function automaton.auto(tree)
 	vPile={} 	--value pile
 	env={} 	 	--enviroment
 	stor={}   	--storage
-	bLocks={} 	--Block Locations
+	bLocs={} 	--Block Locations
 	--print={} 	--Print List
 	loc.init() 	--inicializando o loc 
 	--print("tipo: ", type(tree), type(cPile))
 	push(cPile,tree)
 
-	automaton.rec(cPile,vPile,env,stor,bLocks)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 
 end
 
