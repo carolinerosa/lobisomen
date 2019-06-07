@@ -1,7 +1,7 @@
-let var z = *ji
+let var z = 4
 in 
 	
-        while Not (y == 0)
+        while Not (z == 4)
         do 
             z := z * 4
             
