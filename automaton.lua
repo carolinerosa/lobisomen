@@ -696,6 +696,16 @@ function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)	--LEMBRE o ENV empilha
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
+function isInbLocs(loc,bLocs) --loc 
+
+	for i,v in pairs(bLocs) do
+		if getValue(v) == loc then --se o valor  da location atualde bLocs, eh igual a loc
+			return true
+		end
+	end
+
+	return false
+end
 
 function handle_H_BLKCMD(head,cPile,vPile,env,stor,bLocs)
 
@@ -703,7 +713,14 @@ function handle_H_BLKCMD(head,cPile,vPile,env,stor,bLocs)
 	oldbLocs = pop(vPile)
 
 	bLocs = oldbLocs
-	env=oldEnv
+	env = oldEnv
+
+	for i,v in pairs(stor) do 			--note que i eh o valor de uma location
+		if not isInbLocs(i,bLocs) then 	--se a location nao estiver em bLocs
+			stor[i]=nil					--setamos seu valor como nulo (eh a forma de lua limpar memoria)
+		end 
+	end
+
 	--δ(#BLKCMD :: C, E :: L :: V, E', S, L') = δ(C, V, E, S', L), where S' = S / L.
 	--Note que temos um E e um  L  na  pilha de valores, 
 	--O L foi colocado pelo handle_BLK, para voltarmos ao contexto  antes  do bloco ser iniciado
