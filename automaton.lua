@@ -39,6 +39,7 @@ loc = require "localization"
 
 local automaton = {}
 
+
 function tLen(T) --Prasaber o tamanho da tabela | serio nao use  # nao eh deterministico
 	if T == nil then
 		return 0
@@ -180,26 +181,37 @@ function getValue(head) --NUM,BOO,ID,LOC
 end
 
 function getStatement(head)
+
 	return head[1]
 end
 
 function getFirst(head) --{"Category",value1,value2,value3}
-	return head[2]
 
+	return head[2]
 end
 
 function getSecond(head)  --{"Category",value1,value2,value3}
+
 	return head[3]
 end
 
 function getThird(head)  --{"Category",value1,value2,value3}
-	return head[4]
+
+	return head[4]	
 end
 
 function makeNode(value,category)
 	node = {category,value}
 	return node
 end
+
+function typeCheck(left,right)
+	if getStatement(left)==getStatement(right) then
+		return true	
+	end
+	return false
+end
+
 
 function handle_NUM(head,cPile,vPile,env,stor,bLocs)
 	push(vPile,head)
@@ -217,8 +229,18 @@ function handle_SUM(head,cPile,vPile,env,stor,bLocs)
 end
 
 function handle_H_SUM(head,cPile,vPile,env,stor,bLocs)--#SUM , soma dos dois primeiros itens em vPile
-	valueB = getValue(pop(vPile))
-	valueA = getValue(pop(vPile))
+	b = pop(vPile)
+	a = pop(vPile)
+
+	if not typeCheck(a,b) then
+		print("HOUVE UM ERRO! Tipos incompativeis!")
+		break
+	end
+
+	valueB = getValue(b)
+	valueA = getValue(a)
+
+
 
 	result = valueA + valueB
 	node= makeNode(result,"NUM")
@@ -238,8 +260,14 @@ function handle_SUB(head,cPile,vPile,env,stor,bLocs)
 end
 
 function handle_H_SUB(head,cPile,vPile,env,stor,bLocs)
-	valueB = getValue(pop(vPile))
-	valueA = getValue(pop(vPile))
+	b = pop(vPile)
+	a = pop(vPile)
+
+	if not typeCheck(a,b) then
+		print("HOUVE UM ERRO! Tipos incompativeis!")
+		break
+	end
+
 	result = valueA - valueB
 	push(vPile,makeNode(result,"NUM"))
 	automaton.rec(cPile,vPile,env,stor,bLocs)
@@ -256,8 +284,14 @@ function handle_MUL(head,cPile,vPile,env,stor,bLocs)
 end
 
 function handle_H_MUL(head,cPile,vPile,env,stor,bLocs)
-	valueB = getValue(pop(vPile))
-	valueA = getValue(pop(vPile))
+	b = pop(vPile)
+	a = pop(vPile)
+
+	if not typeCheck(a,b) then
+		print("HOUVE UM ERRO! Tipos incompativeis!")
+		break
+	end
+
 	result = valueA * valueB
 	push(vPile,makeNode(result,"NUM"))
 	automaton.rec(cPile,vPile,env,stor,bLocs)
@@ -274,8 +308,14 @@ function handle_DIV(head,cPile,vPile,env,stor,bLocs)
 end
 
 function handle_H_DIV(head,cPile,vPile,env,stor,bLocs)
-	valueB = getValue(pop(vPile))
-	valueA = getValue(pop(vPile))
+	b = pop(vPile)
+	a = pop(vPile)
+
+	if not typeCheck(a,b) then
+		print("HOUVE UM ERRO! Tipos incompativeis!")
+		break
+	end
+
 	result = valueA / valueB
 	push(vPile,makeNode(result,"NUM"))
 	automaton.rec(cPile,vPile,env,stor,bLocs)
