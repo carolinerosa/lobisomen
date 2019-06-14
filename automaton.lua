@@ -657,17 +657,9 @@ function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)	--LEMBRE o ENV empilha
 	
 	
 	-- atualizacao de env
-	
-	if(env[id] ~= nil) then 
-	
-		env[id] = newEnv			
+	env[id] = newEnv
 
-	else
 
-		env[id] = newEnv
-
-	end 
-	
 	--O E' representado ai era pra falar de uma lista de mapas, mas como nao teremosuma varias declaracoes, teremos apenas 1 mapa
 	--Este mapa eh deixado pelo BIND,
 	--Temos que pegar o enviroment na pilha de valores e entao fazer E/E' que no caso soh significa pegar o mapa e atualizar o E
