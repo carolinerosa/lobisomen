@@ -674,7 +674,7 @@ function handle_H_BLKCMD(head,cPile,vPile,env,stor,bLocs)
 	end
 	
 	bLocs = oldbLocs
-
+	env=oldEnv
 	--δ(#BLKCMD :: C, E :: L :: V, E', S, L') = δ(C, V, E, S', L), where S' = S / L.
 	--Note que temos um E e um  L  na  pilha de valores, 
 	--O L foi colocado pelo handle_BLK, para voltarmos ao contexto  antes  do bloco ser iniciado
