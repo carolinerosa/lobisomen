@@ -145,6 +145,8 @@ function getValue(head) --NUM,BOO,ID,LOC
 		end
 	elseif category == "ID" then
 		return value
+	elseif category == "ENV" then
+		return value
 	elseif category == "LOC" then
 		return value	 	
 	end
@@ -303,14 +305,16 @@ function handle_LE(head,cPile,vPile,env,stor,bLocs)
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueB)
 	push(cPile,valueA)
+	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
 function handle_H_LE(head,cPile,vPile,env,stor,bLocs)
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
+	
+
 	if valueA <= valueB then 
 		result = "TRUE"
 	else
@@ -325,8 +329,8 @@ function handle_GT(head,cPile,vPile,env,stor,bLocs)
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueB)
 	push(cPile,valueA)
+	push(cPile,valueB)
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
@@ -486,7 +490,10 @@ end
 function handle_ID(head,cPile,vPile,env,stor,bLocs)
 	idValue = getValue(head)
 	idValue = idValue:gsub("%s", "")
-	headLoc = getValue(env[idValue])
+	
+	headLoc = getValue(getStatement(env[idValue]))
+
+
 	headBindded = stor[headLoc] 
 	push(vPile,headBindded)
 	automaton.rec(cPile,vPile,env,stor,bLocs)
@@ -510,8 +517,9 @@ function handle_H_ASSIGN(head,cPile,vPile,env,stor,bLocs)
 	id=pop(vPile)
 	idValue = getValue(id)
 	idValue = idValue:gsub("%s", "")
+	
+	localization = getValue(getStatement(env[idValue]))
 
-	localization = getValue(env[idValue])
 	stor[localization] = expValue												
 
 	automaton.rec(cPile,vPile,env,stor,bLocs)
@@ -544,9 +552,9 @@ function handle_H_REF(head,cPile,vPile,env,stor,bLocs)
 
 	expResp = pop(vPile)			--Pegamos o  resultado da expressao colocada pelo REF
 	--idResp = pop(vPile)
-	stor[locValue] = {expResp}		--E a salvamos na memoria, ligada pela nova location
-	print("bam,os ver")
-	tPrint(stor)
+	stor[locValue] = expResp		--E a salvamos na memoria, ligada pela nova location
+	
+
 	push(bLocs,locVar) 				--Atualizando o Bloco de Locations com a locaion nova
 
 	push(vPile,locVar)				--Empilhamos uma Localization na pilhade valores
@@ -596,17 +604,18 @@ function handle_H_BIND(head,cPile,vPile,env,stor,bLocs)
 	H = pop(vPile)
 	newEnv = {}								--Onde criaremos um enviroment novo ou uniremos ENVs
 
-	if (H=nil) then 						--Se for  nulo ou nao for envi, apenas criamos um novo ENV
-		newEnv = {"ENV",{[getValue(id)]=bindable}} --Nao precisamos empilhar nada
+	if (H ==nil) then 						--Se for  nulo ou nao for envi, apenas criamos um novo ENV
+
+		newEnv = {"ENV",{bindable,id}} --Nao precisamos empilhar nada
 	elseif  (getStatement(H) ~="ENV") then
 		push(H,vPile) 						--deve ser devolvido antes de tudo, pois nao serah interagido
-		newEnv = {"ENV",{[getValue(id)]=bindable}}
+		newEnv = {"ENV",{{[getValue(id)]=bindable},id}}
 	else
 		newEnv = getValue(H)				--Salvamos o env que estaria em H no newEnv
-		newEnv[getValue(id)] = bindable 	--Depois o atualizamos com o que ha  de novo.
+		newEnv[getValue(id)] = {bindable,id} 	--Depois o atualizamos com o que ha  de novo.
 	end
-
-	push(vPile,newEnv)					--entao este eh empilhado na pilha de valores para  ser usado pelo BLK
+	
+	push(vPile,newEnv)				--entao este eh empilhado na pilha de valores para  ser usado pelo BLK
 
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
@@ -634,31 +643,49 @@ function handle_BLK(head,cPile,vPile,env,stor,bLocs)
 end
 
 function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)	--LEMBRE o ENV empilhado ta na forma {"ENV",{<Aqui eh o env de verdade}}, 
-	print("Vamnos executar o blkdec")						--ou seja, chame getValue na variavel que segurar o env da pilhade valores
+		--ou seja, chame getValue na variavel que segurar o env da pilhade valores
 
 	--δ(#BLKDEC :: C, E' :: V, E, S, L) = δ(C, E :: V, E / E', S, L),
-	tPrint(vPile)
+	
+	
 	map = pop(vPile)
-	tPrint(map)
+	push(vPile,env)
+	newEnv = getFirst(map)
+	id = getValue(getFirst(newEnv))
+	
+--empilhar na pilha de valor env
+	
+	
+	-- atualizacao de env
+	
+	if(env[id] ~= nil) then 
+	
+		env[id] = newEnv			
 
+	else
 
-		if(type(env[map[2][2]]) == "table") then 
-			env[map[2][2]] ={map[3],map[2]}
-		else
-			push(env, {map[3],map[2]})
-		end 
-	push(vPile, env)
+		env[id] = newEnv
+
+	end 
 	
 	--O E' representado ai era pra falar de uma lista de mapas, mas como nao teremosuma varias declaracoes, teremos apenas 1 mapa
 	--Este mapa eh deixado pelo BIND,
 	--Temos que pegar o enviroment na pilha de valores e entao fazer E/E' que no caso soh significa pegar o mapa e atualizar o E
-	--Note o mapa esta no formato {"MAP",id,loc}, usamos o valor de id para indexar o loc (lembre de usar o getValue,getFirst e getSecond)
+	--Note o mapa esta no formato {"ENV",id,loc}, usamos o valor de id para indexar o loc (lembre de usar o getValue,getFirst e getSecond)
 
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
 function handle_H_BLKCMD(head,cPile,vPile,env,stor,bLocs)
-	print("ta na hora de fazer o blkcmd")
+
+	oldEnv = pop(vPile)
+	oldbLocs = pop(vPile)
+	if(oldbLocs ~=nil) then
+
+	end
+	
+	bLocs = oldbLocs
+
 	--δ(#BLKCMD :: C, E :: L :: V, E', S, L') = δ(C, V, E, S', L), where S' = S / L.
 	--Note que temos um E e um  L  na  pilha de valores, 
 	--O L foi colocado pelo handle_BLK, para voltarmos ao contexto  antes  do bloco ser iniciado

@@ -1,9 +1,9 @@
 let var z = 4
 in 
 	
-        while Not (z == 4)
+        while Not (z > 4)
         do 
-            z := z * 4
+            z := z / 4
             
 	end
 end
