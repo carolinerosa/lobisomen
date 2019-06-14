@@ -59,6 +59,12 @@ function pop(pile)
 	return nil
 end
 
+function push(pile,head)
+
+	table.insert(pile,head) --como nao tem valor coloca no final
+	--print("tipo: ", type(pile), type(head))
+	
+end
 
 
 function tPrint(myTable)
@@ -85,15 +91,30 @@ function tPrint(myTable)
 		--io.write(myTable)	
 	end
 end
-function push(pile,head)
 
-	
-	
-	table.insert(pile,head) --como nao tem valor coloca no final
-	--print("tipo: ", type(pile), type(head))
+function printStorEnv(stor,env)
+	io.write("Env\t: {")
+	locID={}--usando o LOC salvarah o valor da  ID
 
-	
+	for id,loc in pairs(env)do
+		io.write("[",id,"]=")
+		tPrint(loc)
+		io.write(",")
+
+		locID[getValue(loc)]=id
+	end
+	print("}")
+
+	io.write("Stor\t: {")
+	for loc,val in pairs(stor)do
+		io.write("[",locID[loc],"]=")
+		tPrint(val)
+		io.write(",")
+	end
+	print("}")
+
 end
+
 
 function printAutomaton(head,cPile,vPile,env,stor,bLocs)
 	print("=========================================================================================================================")
@@ -107,12 +128,16 @@ function printAutomaton(head,cPile,vPile,env,stor,bLocs)
 	io.write("vPile\t: ")
 	tPrint(vPile)
 	print("")
+
+	printStorEnv(stor,env)
+	--[[
 	io.write("Env\t: ")
 	tPrint(env)
 	print("")
 	io.write("Stor\t: ")
 	tPrint(stor)
-	print("")
+	print("")]]
+
 	io.write("bLocs\t: ")
 	tPrint(bLocs)
 	print("")
@@ -395,7 +420,6 @@ function handle_H_AND(head,cPile,vPile,env,stor,bLocs)
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-
 function handle_OR(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#OR"}
 	valueA = getFirst(head)
@@ -436,7 +460,6 @@ function handle_H_NOT(head,cPile,vPile,env,stor,bLocs)
 	push(vPile,makeNode(result,"BOO"))
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
-
 
 function handle_LOOP(head,cPile,vPile,env,stor,bLocs)
 	OP={"#LOOP"}
@@ -604,17 +627,20 @@ function handle_H_BIND(head,cPile,vPile,env,stor,bLocs)
 	H = pop(vPile)
 	newEnv = {}								--Onde criaremos um enviroment novo ou uniremos ENVs
 
-	if (H ==nil) then 						--Se for  nulo ou nao for envi, apenas criamos um novo ENV
-
-		newEnv = {"ENV",{bindable,id}} --Nao precisamos empilhar nada
+	if (H==nil) then 						
+		newEnv = {"ENV",{[getValue(id)]=bindable}} 
 	elseif  (getStatement(H) ~="ENV") then
-		push(H,vPile) 						--deve ser devolvido antes de tudo, pois nao serah interagido
-		newEnv = {"ENV",{{[getValue(id)]=bindable},id}}
+		push(H,vPile) 						
+		newEnv = {"ENV",{[getValue(id)]=bindable}}
 	else
-		newEnv = getValue(H)				--Salvamos o env que estaria em H no newEnv
-		newEnv[getValue(id)] = {bindable,id} 	--Depois o atualizamos com o que ha  de novo.
+		--O codigo eh o mesmo que  isso -> H[2][getValue(id)] = bindable  , amas assim eh feio 
+		tempEnv = getValue(H)  				--se ja tem uma ENV ela pega o {"ENV", {...}}, porem como usamos getValue, tamo devolvendo o		
+		tempEnv[getValue(id)] = bindable 	--Atualizamos a table naquela posicao	
+		newEnv = {"ENV",tempEnv}		 	--Criamos no formato {"ENV", {...}} , para manter conscistencia 
 	end
-	
+
+	tPrint("NEW ENV"+newEnv)
+
 	push(vPile,newEnv)				--entao este eh empilhado na pilha de valores para  ser usado pelo BLK
 
 	automaton.rec(cPile,vPile,env,stor,bLocs)
@@ -646,16 +672,21 @@ function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)	--LEMBRE o ENV empilha
 		--ou seja, chame getValue na variavel que segurar o env da pilhade valores
 
 	--δ(#BLKDEC :: C, E' :: V, E, S, L) = δ(C, E :: V, E / E', S, L),
-	
-	
-	map = pop(vPile)
-	push(vPile,env)    --empilhar na pilha de valor env
 
-	newEnv = getFirst(map)
-	id = getValue(getFirst(newEnv))
-	
-	-- atualizacao de env
-	env[id] = newEnv
+	newEnv = pop(vPile)
+	newEnvValue = getValue(newEnv)
+
+	envCopy = {"ENV",env}
+	push(vPile,envCopy)
+
+	-- env/newEnvValue
+	for id,value in pairs(env) do
+		for newId,newValue in pairs(newEnvValue) do
+			if id==newId then
+				env[id]=newValue
+			end
+		end
+	end
 
 	--O E' representado ai era pra falar de uma lista de mapas, mas como nao teremosuma varias declaracoes, teremos apenas 1 mapa
 	--Este mapa eh deixado pelo BIND,
@@ -665,14 +696,12 @@ function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)	--LEMBRE o ENV empilha
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
+
 function handle_H_BLKCMD(head,cPile,vPile,env,stor,bLocs)
 
 	oldEnv = pop(vPile)
 	oldbLocs = pop(vPile)
-	if(oldbLocs ~=nil) then
 
-	end
-	
 	bLocs = oldbLocs
 	env=oldEnv
 	--δ(#BLKCMD :: C, E :: L :: V, E', S, L') = δ(C, V, E, S', L), where S' = S / L.
@@ -772,7 +801,11 @@ function automaton.auto(tree)
 	bLocs={} 	--Block Locations
 	--print={} 	--Print List
 	loc.init() 	--inicializando o loc 
+	
 	--print("tipo: ", type(tree), type(cPile))
+
+	--tPrint(tree)
+
 	push(cPile,tree)
 
 	automaton.rec(cPile,vPile,env,stor,bLocs)
