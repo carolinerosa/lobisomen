@@ -649,16 +649,13 @@ function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)	--LEMBRE o ENV empilha
 	
 	
 	map = pop(vPile)
-	push(vPile,env)
+	push(vPile,env)    --empilhar na pilha de valor env
+
 	newEnv = getFirst(map)
 	id = getValue(getFirst(newEnv))
 	
---empilhar na pilha de valor env
-	
-	
 	-- atualizacao de env
 	env[id] = newEnv
-
 
 	--O E' representado ai era pra falar de uma lista de mapas, mas como nao teremosuma varias declaracoes, teremos apenas 1 mapa
 	--Este mapa eh deixado pelo BIND,
