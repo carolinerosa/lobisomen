@@ -234,7 +234,7 @@ function handle_H_SUM(head,cPile,vPile,env,stor,bLocs)--#SUM , soma dos dois pri
 
 	if not typeCheck(a,b) then
 		print("HOUVE UM ERRO! Tipos incompativeis!")
-		break
+		return
 	end
 
 	valueB = getValue(b)
@@ -265,7 +265,7 @@ function handle_H_SUB(head,cPile,vPile,env,stor,bLocs)
 
 	if not typeCheck(a,b) then
 		print("HOUVE UM ERRO! Tipos incompativeis!")
-		break
+		return
 	end
 
 	result = valueA - valueB
@@ -289,7 +289,7 @@ function handle_H_MUL(head,cPile,vPile,env,stor,bLocs)
 
 	if not typeCheck(a,b) then
 		print("HOUVE UM ERRO! Tipos incompativeis!")
-		break
+		return
 	end
 
 	result = valueA * valueB
@@ -313,7 +313,7 @@ function handle_H_DIV(head,cPile,vPile,env,stor,bLocs)
 
 	if not typeCheck(a,b) then
 		print("HOUVE UM ERRO! Tipos incompativeis!")
-		break
+		return
 	end
 
 	result = valueA / valueB

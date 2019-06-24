@@ -11,5 +11,5 @@ Para se utilizar do lobisomen.lua se utilize o arquivo "entrada.txt" e escreva o
 local f = assert(io.open("entrada.txt", "rb"))
 local entrada = f:read("*all")
 f:close()
-io.write("isso eh p:", p)
+
 automaton.auto(parse.generator(entrada))
