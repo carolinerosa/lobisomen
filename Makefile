@@ -10,7 +10,7 @@ install:
 
 compile:
 	@echo ">>execução do Lobisomen"
-	lua lobisomen.lua
+	lua lobisomen.lua 
 
 reset:
 	@echo ">>removendo dependências"
@@ -18,3 +18,8 @@ reset:
 	sudo apt remove lua5.2
 	sudo apt remove lua-sec
 	sudo apt remove lua-socket
+
+args = `arg="$(filter-out $@,$(MAKECMDGOALS))" && echo $${arg:-${1}}`
+
+test:
+	@echo $(call args,defaultstring)

@@ -679,7 +679,7 @@ function handle_H_BIND(head,cPile,vPile,env,stor,bLocs)
 		newEnv = {"ENV",tempEnv}		 	--Criamos no formato {"ENV", {...}} , para manter conscistencia 
 	end
 
-	tPrint("NEW ENV"+newEnv)
+	tPrint(newEnv)
 
 	push(vPile,newEnv)				--entao este eh empilhado na pilha de valores para  ser usado pelo BLK
 
@@ -718,14 +718,18 @@ function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)	--LEMBRE o ENV empilha
 
 	envCopy = {"ENV",env}
 	push(vPile,envCopy)
-
+	
 	-- env/newEnvValue
 	for id,value in pairs(env) do
+		
 		for newId,newValue in pairs(newEnvValue) do
 			if id==newId then
 				env[id]=newValue
 			end
 		end
+	end
+	if(tLen(env)==0) then
+		env = newEnvValue	
 	end
 
 	--O E' representado ai era pra falar de uma lista de mapas, mas como nao teremosuma varias declaracoes, teremos apenas 1 mapa

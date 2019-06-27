@@ -29,7 +29,7 @@ local spc = lpeg.S(" \t\n")^0
 local letValue = white * lpeg.C("let")
 local varValue = white * lpeg.C("var")
 
-local cnsValue = white * lpeg.C("cns")
+local constValue = white * lpeg.C("const")
 local deRefValue = white * lpeg.C("*")
 local valRefValue = white * lpeg.C("&")
 
@@ -163,9 +163,9 @@ function typeVar(left, op, right,...)
 	return{"BIND",op,  right}
 end
 
-function typeCns(left, op, right,...)
+function typeConst(left, op, right,...)
 	
-	right = {"CNS",right}
+	-- right = {"const",right}
 	return{"BIND",op,  right}
 end
 
@@ -175,20 +175,57 @@ function typeLet(left, op, right, ...)
 
 
 	left = "BLK"
-	local arg={right,...}	
+
+	local arg={op,right,...}
+
+	local atual=2
 	local resp = right
-	--print("temos x comandos: ", #arg)
-	if(#arg >1) then
-		atual = #arg -1
-		resp = {"CSEQ",arg[atual], arg[atual+1]} 
-		atual = atual -1
-		while atual>0 do
+		
+	print("temos x comandos: ", #arg)
+	
+	
+	if(atual <=#arg and arg[atual][1]=="BIND") then
+		print("e bind", arg[(atual)][1])
+		resp = {"DSEQ",arg[atual-1], arg[atual]} 
+		atual = atual +1
+		while atual<=#arg and arg[atual][1]=="BIND" do
+		
+			print("e bind", arg[(atual)][1], " atual" , atual)
+			resp = {"DSEQ",arg[atual], resp} 
+			atual = atual -1
+		end
+			
+	
+		if((atual) <#arg ) then
+
+			print("não e bind", arg[(atual)][1])
+			respCSeq = {"CSEQ",arg[atual], arg[atual+1]} 
+			atual = atual +2
+			while atual<=#arg  do
+				respCSeq = {"CSEQ",arg[atual], respCSeq} 
+				atual = atual -1
+			end
+			resp= {resp,respCSeq}
+		else
+			resp = {resp,arg[#arg]}
+		end
+		
+		return { left, resp[1],resp[2]}
+	
+	end
+	if((atual) <#arg and arg[(atual)][1]~="BIND") then
+
+		print("não e bind", arg[(atual-1)][1])
+		resp = {"CSEQ",arg[atual-1], arg[atual]} 
+		atual = atual +1
+		while atual<=#arg  do
 			resp = {"CSEQ",arg[atual], resp} 
 			atual = atual -1
 		end
-	else
-		resp = arg[1]
+	
 	end
+	
+	
 	return { left,op, resp}
 end
 
@@ -221,7 +258,7 @@ transformType =
       	["or"] =typeOr,
 	["let"] = typeLet,
 	["var"]=typeVar,
-	["cns"]=typeCns,
+	["const"]=typeConst,
 	["*Pont"]=typeDeRef,
 	["&Pont"]=typeValRef
     }
@@ -243,7 +280,7 @@ local function node(p)
 
 	if(type(term1) == "string") then
 		
-		if(term1=="while" or term1 == "if" or term1 == "Not" or term1=="var" or term1=="let" or term1=="cns" and( term1 ~="or" and term1~="and"))then
+		if(term1=="while" or term1 == "if" or term1 == "Not" or term1=="var" or term1=="let" or term1=="const" and( term1 ~="or" and term1~="and"))then
 			--print("e ", term1)			
 			return transformType[term1](term1, term2, term3, ...)
 		end
@@ -311,17 +348,12 @@ local transformImp = lpeg.P({
 	"s",
 	s = impFinal(lpeg.V("cmd")^1),
 	cmd = (lpeg.V("let")+(lpeg.V("assign") + lpeg.V("loop") +lpeg.V("cond") ) * (white + -1)),
-	let = node(letValue * spc * lpeg.V("typeLet") * spc *"in" * spc * lpeg.V("cmd")^1 *spc* "end"),
-	typeLet = node((varValue + cnsValue) * spc * lpeg.V("id") *spc* spc* "=" * spc* (lpeg.V("exp") + lpeg.V("expPont"))),
+	let = node(letValue * spc * lpeg.V("typeLet") * ("," * lpeg.V("typeLet"))^0 * spc *"in" * spc * lpeg.V("cmd")^1 *spc* "end"),
+	typeLet = node((varValue + constValue) * spc * lpeg.V("id") *spc* spc* "=" * spc* lpeg.V("exp") ),
 	loop = node(loopValue * spc * lpeg.V("exp") * spc * "do" * spc * (lpeg.V("cmd")^1) ) * spc *"end",
 	assign = node(lpeg.V("id") * igual *lpeg.V("exp")),
 	cond = node(condValue * spc * lpeg.V("exp") * spc * "then" * (spc * (lpeg.V("cmd")^1))^0 * spc * (elseValue * spc * (lpeg.V("cmd")^1))^0 * spc * "end"),
 	exp = (lpeg.V("boolExp") + lpeg.V("aritExp")) ,
-	expPont =  lpeg.V("addSubPont")  + lpeg.V("multExpPont") + lpeg.V("multDivPont") ,
-	addSubPont = node(lpeg.V("multExpPont") * addSubValue * lpeg.V("expPont")),
-	multExpPont = lpeg.V("multDivPont") + lpeg.V("atomPont") ,
-	multDivPont = node(lpeg.V("atomPont") * multDivValue * lpeg.V("multExpPont")),
-	atomPont = node((deRefValue + valRefValue) * lpeg.V("id")),
 	boolExp = lpeg.V("negation") + lpeg.V("equality") + lpeg.V("conjunctionDis") + lpeg.V("compareEq") + lpeg.V("bool") +  lpeg.V("parentesisExp"),
 	negation = node(notValue *spc * lpeg.V("boolExp")),
 	equality = node(lpeg.V("aritExp") * compare * lpeg.V("exp")),
@@ -332,7 +364,7 @@ local transformImp = lpeg.P({
 	multExp = lpeg.V("multDiv") + lpeg.V("atom") + lpeg.V("parentesisExp"),
 	multDiv = node(lpeg.V("atom") * multDivValue * lpeg.V("multExp")),
 	parentesisExp = "(" * spc * lpeg.V("boolExp") * spc * ")",
-	atom = node(integer + lpeg.V("bool") +  lpeg.V("id")),
+	atom = node(integer + lpeg.V("bool") + ((deRefValue + valRefValue) * lpeg.V("id") ) + lpeg.V("id")),
 	bool = node(boolValue),
 	id = node(idValue - elseValue)
 
