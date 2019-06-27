@@ -1,7 +1,11 @@
-let const z = 4
+let var z = 1
 in 	
-         
-            z := z / 4
-          
-	
+    let var y = 10     
+    in  
+        while not (y == 0)
+        do 
+            z := z * y
+            y := y - 1
+        end
+    end      
 end

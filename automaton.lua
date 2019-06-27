@@ -106,11 +106,16 @@ function printStorEnv(stor,env)
 	end
 	print("}")
 
+
 	io.write("Stor\t: {")
 	for loc,val in pairs(stor)do
-		io.write("[",locID[loc],"]=")
-		tPrint(val)
-		io.write(",")
+		if(tLen(locID)==0)then
+			io.write("")
+		elseif (loc <= tLen(env))then
+			io.write("[",locID[loc],"]=")
+			tPrint(val)
+			io.write(",")
+		end
 	end
 	print("}")
 
@@ -148,15 +153,16 @@ end
 
 
 function getLocalization() --por enquanto sempre coloca no final do stor 
-	loc.getLoc()
-	location = loc.size
-	--print("LOCALIZATION IS : " location)
+	location = loc.getLoc()
+	--print("LOCALIZATION IS : " ,location)
 	return location
 end
 
 function getValue(head) --NUM,BOO,ID,LOC
 	category = head[1]
+	--print("ESSA EH A  CATEGORIA PEGA",category)
 	value = head[2]
+	--print("ESSE EH O VALOR",value)
 	if category == "NUM" then
 		return value
 	elseif category == "BOO" then
@@ -174,7 +180,9 @@ function getValue(head) --NUM,BOO,ID,LOC
 	elseif category == "ENV" then
 		return value
 	elseif category == "LOC" then
-		return value	 	
+		return value	
+	elseif category == "ENV" then
+		return value  	
 	end
 
 	print("Eh de um tipo nao implementado ou com erro")
@@ -220,11 +228,11 @@ end
 
 function handle_SUM(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#SUM"}
-	valueA = getFirst(head)
-	valueB = getSecond(head)
+	a = getFirst(head)
+	b = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueB)
-	push(cPile,valueA)
+	push(cPile,b)
+	push(cPile,a)
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
@@ -241,7 +249,6 @@ function handle_H_SUM(head,cPile,vPile,env,stor,bLocs)--#SUM , soma dos dois pri
 	valueA = getValue(a)
 
 
-
 	result = valueA + valueB
 	node= makeNode(result,"NUM")
 
@@ -251,11 +258,11 @@ end
 
 function handle_SUB(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#SUB"}
-	valueA = getFirst(head)
-	valueB = getSecond(head)
+	a = getFirst(head)
+	b = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueB)
-	push(cPile,valueA)
+	push(cPile,b)
+	push(cPile,a)
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
@@ -268,6 +275,9 @@ function handle_H_SUB(head,cPile,vPile,env,stor,bLocs)
 		return
 	end
 
+	valueB = getValue(b)
+	valueA = getValue(a)
+
 	result = valueA - valueB
 	push(vPile,makeNode(result,"NUM"))
 	automaton.rec(cPile,vPile,env,stor,bLocs)
@@ -275,11 +285,11 @@ end
 
 function handle_MUL(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#MUL"}
-	valueA = getFirst(head)
-	valueB = getSecond(head)
+	a = getFirst(head)
+	b = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueB)
-	push(cPile,valueA)
+	push(cPile,b)
+	push(cPile,a)
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
@@ -292,6 +302,9 @@ function handle_H_MUL(head,cPile,vPile,env,stor,bLocs)
 		return
 	end
 
+	valueB = getValue(b)
+	valueA = getValue(a)
+
 	result = valueA * valueB
 	push(vPile,makeNode(result,"NUM"))
 	automaton.rec(cPile,vPile,env,stor,bLocs)
@@ -299,11 +312,11 @@ end
 
 function handle_DIV(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#DIV"}
-	valueA = getFirst(head)
-	valueB = getSecond(head)
+	a = getFirst(head)
+	b = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueB)
-	push(cPile,valueA)
+	push(cPile,b)
+	push(cPile,a)
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
@@ -315,6 +328,13 @@ function handle_H_DIV(head,cPile,vPile,env,stor,bLocs)
 		print("HOUVE UM ERRO! Tipos incompativeis!")
 		return
 	end
+
+	if valueB == 0 then
+		print("Nao se pode dividir por 0")
+	end 
+
+	valueB = getValue(b)
+	valueA = getValue(a)
 
 	result = valueA / valueB
 	push(vPile,makeNode(result,"NUM"))
@@ -554,7 +574,7 @@ function handle_ID(head,cPile,vPile,env,stor,bLocs)
 	idValue = getValue(head)
 	idValue = idValue:gsub("%s", "")
 	
-	headLoc = getValue(getStatement(env[idValue]))
+	headLoc = getValue(env[idValue])
 
 
 	headBindded = stor[headLoc] 
@@ -581,7 +601,7 @@ function handle_H_ASSIGN(head,cPile,vPile,env,stor,bLocs)
 	idValue = getValue(id)
 	idValue = idValue:gsub("%s", "")
 	
-	localization = getValue(getStatement(env[idValue]))
+	localization = getValue(env[idValue])
 
 	stor[localization] = expValue												
 
@@ -612,6 +632,7 @@ function handle_H_REF(head,cPile,vPile,env,stor,bLocs)
 
 	locValue = getLocalization()	--valor da location em  si,sendo criado
 	locVar = loc.makeLoc(locValue)	--{"LOC",locValue}, nosso formato de Location
+	--tPrint(locVar)
 
 	expResp = pop(vPile)			--Pegamos o  resultado da expressao colocada pelo REF
 	--idResp = pop(vPile)
@@ -669,8 +690,11 @@ function handle_H_BIND(head,cPile,vPile,env,stor,bLocs)
 
 	if (H==nil) then 						
 		newEnv = {"ENV",{[getValue(id)]=bindable}} 
+	elseif (tLen(H)==0) then
+		push(vPile,H) 
+		newEnv = {"ENV",{[getValue(id)]=bindable}} 	
 	elseif  (getStatement(H) ~="ENV") then
-		push(H,vPile) 						
+		push(vPile,H) 						
 		newEnv = {"ENV",{[getValue(id)]=bindable}}
 	else
 		--O codigo eh o mesmo que  isso -> H[2][getValue(id)] = bindable  , amas assim eh feio 
@@ -679,7 +703,7 @@ function handle_H_BIND(head,cPile,vPile,env,stor,bLocs)
 		newEnv = {"ENV",tempEnv}		 	--Criamos no formato {"ENV", {...}} , para manter conscistencia 
 	end
 
-	tPrint(newEnv)
+	--tPrint(newEnv)
 
 	push(vPile,newEnv)				--entao este eh empilhado na pilha de valores para  ser usado pelo BLK
 
@@ -699,9 +723,10 @@ function handle_BLK(head,cPile,vPile,env,stor,bLocs)
 	push(cPile,OPdec)		--Empilhando  #BLKDEC e D
 	push(cPile,dec)
 
-	if(tLen(bLocs) > 0)then
-		push(vPile,bLocs)
-	end	
+
+	--if(tLen(bLocs) > 0)then
+	push(vPile,bLocs)
+	--end	
 		--Temos que colocar o conteudo do bLocs no vPile, e depois deixa-lo vazio
 	bLocs = {}
 
@@ -712,22 +737,25 @@ function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)	--LEMBRE o ENV empilha
 		--ou seja, chame getValue na variavel que segurar o env da pilhade valores
 
 	--δ(#BLKDEC :: C, E' :: V, E, S, L) = δ(C, E :: V, E / E', S, L),
-
+	
 	newEnv = pop(vPile)
+	
 	newEnvValue = getValue(newEnv)
 
-	envCopy = {"ENV",env}
+	tempCopy={}
+
+	for i,v in pairs(env)do
+		tempCopy[i]=v
+	end
+
+	envCopy = {"ENV",tempCopy}
 	push(vPile,envCopy)
 	
 	-- env/newEnvValue
-	for id,value in pairs(env) do
-		
-		for newId,newValue in pairs(newEnvValue) do
-			if id==newId then
-				env[id]=newValue
-			end
-		end
+	for newId,newValue in pairs(newEnvValue) do
+		env[newId]=newValue
 	end
+
 	if(tLen(env)==0) then
 		env = newEnvValue	
 	end
@@ -756,14 +784,19 @@ function handle_H_BLKCMD(head,cPile,vPile,env,stor,bLocs)
 	oldEnv = pop(vPile)
 	oldbLocs = pop(vPile)
 
-	bLocs = oldbLocs
-	env = oldEnv
 
 	for i,v in pairs(stor) do 			--note que i eh o valor de uma location
 		if not isInbLocs(i,bLocs) then 	--se a location nao estiver em bLocs
 			stor[i]=nil					--setamos seu valor como nulo (eh a forma de lua limpar memoria)
 		end 
 	end
+
+	bLocs = oldbLocs
+
+
+	env = getValue(oldEnv)
+
+	
 
 	--δ(#BLKCMD :: C, E :: L :: V, E', S, L') = δ(C, V, E, S', L), where S' = S / L.
 	--Note que temos um E e um  L  na  pilha de valores, 

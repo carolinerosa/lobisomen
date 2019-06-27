@@ -10,7 +10,7 @@ local white = lpeg.S(" \t\r\n") ^ 0
 local integer = white * lpeg.R("09") ^ 1 / tonumber
 local multDivValue = white * lpeg.C(lpeg.S("/*"))
 local addSubValue = white * lpeg.C(lpeg.S("+-"))
-local notValue = white * lpeg.C("Not")
+local notValue = white * lpeg.C("not")
 local igual = white * lpeg.C(":=")
 local compare = white * lpeg.C("==")
 local andOr = white * (lpeg.C("and") + lpeg.C("or"))
@@ -181,7 +181,7 @@ function typeLet(left, op, right, ...)
 	local atual=2
 	local resp = right
 		
-	print("temos x comandos: ", #arg)
+	--print("temos x comandos: ", #arg)
 	
 	
 	if(atual <=#arg and arg[atual][1]=="BIND") then
@@ -253,7 +253,7 @@ transformType =
       	[":="]=typeAssign,
       	["while"]=typeWhile,
       	["if"]=typeIf,
-      	["Not"]=typeNot,
+      	["not"]=typeNot,
       	["and"]=typeAnd,
       	["or"] =typeOr,
 	["let"] = typeLet,
@@ -280,7 +280,7 @@ local function node(p)
 
 	if(type(term1) == "string") then
 		
-		if(term1=="while" or term1 == "if" or term1 == "Not" or term1=="var" or term1=="let" or term1=="const" and( term1 ~="or" and term1~="and"))then
+		if(term1=="while" or term1 == "if" or term1 == "not" or term1=="var" or term1=="let" or term1=="const" and( term1 ~="or" and term1~="and"))then
 			--print("e ", term1)			
 			return transformType[term1](term1, term2, term3, ...)
 		end
