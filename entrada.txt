@@ -1,11 +1,11 @@
-let var z = 1
+let var z = 1, var p = 9
 in 	
     let var y = 10     
     in  
         while not (y == 0)
         do 
             z := z * y
-            y := y - 1
+            y := y - 1 
         end
     end      
 end

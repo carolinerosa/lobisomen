@@ -101,12 +101,12 @@ function printStorEnv(stor,env)
 		io.write("[",id,"]=")
 		tPrint(loc)
 		io.write(",")
-
 		locID[getValue(loc)]=id
+		
+			
 	end
 	print("}")
-
-
+	
 	io.write("Stor\t: {")
 	for loc,val in pairs(stor)do
 		if(tLen(locID)==0)then
@@ -729,7 +729,7 @@ function handle_BLK(head,cPile,vPile,env,stor,bLocs)
 	--end	
 		--Temos que colocar o conteudo do bLocs no vPile, e depois deixa-lo vazio
 	bLocs = {}
-
+	
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
@@ -756,10 +756,10 @@ function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)	--LEMBRE o ENV empilha
 		env[newId]=newValue
 	end
 
+
 	if(tLen(env)==0) then
 		env = newEnvValue	
 	end
-
 	--O E' representado ai era pra falar de uma lista de mapas, mas como nao teremosuma varias declaracoes, teremos apenas 1 mapa
 	--Este mapa eh deixado pelo BIND,
 	--Temos que pegar o enviroment na pilha de valores e entao fazer E/E' que no caso soh significa pegar o mapa e atualizar o E
@@ -786,7 +786,7 @@ function handle_H_BLKCMD(head,cPile,vPile,env,stor,bLocs)
 
 
 	for i,v in pairs(stor) do 			--note que i eh o valor de uma location
-		if not isInbLocs(i,bLocs) then 	--se a location nao estiver em bLocs
+		if isInbLocs(i,bLocs) then 	--se a location nao estiver em bLocs
 			stor[i]=nil					--setamos seu valor como nulo (eh a forma de lua limpar memoria)
 		end 
 	end
@@ -812,6 +812,15 @@ function handle_H_BLKCMD(head,cPile,vPile,env,stor,bLocs)
 
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
+
+function handle_DSEQ(head,cPile,vPile,env,stor,bLocs)
+	command1 = getFirst(head)
+	command2 = getSecond(head)
+	push(cPile,command1)
+	push(cPile,command2)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
+end
+
 
 handlers =
     {
@@ -858,7 +867,8 @@ handlers =
         ["#BIND"]=handle_H_BIND,
         ["BLK"]=handle_BLK,
         ["#BLKDEC"]=handle_H_BLKDEC,
-        ["#BLKCMD"]=handle_H_BLKCMD
+        ["#BLKCMD"]=handle_H_BLKCMD,
+        ["DSEQ"]=handle_DSEQ
         --["CNS"]=handle_CNS       	Em vez de apontar pra uma location, aponta para um numero
         --["LOC"]=handle_LOC		Talvez usar para poder printar LOC,trata como NUM e BOO
     }
@@ -875,12 +885,17 @@ function automaton.rec(cPile,vPile,env,stor,bLocs)
 	else 
 
 		head = pop(cPile)
+		
 
+
+	
+		
 		printAutomaton(head,cPile,vPile,env,stor,bLocs)
 
 		stat=getStatement(head) --stat para statement, pois pode  ser operacao ou comando
-
+		
 		handlers[stat](head,cPile,vPile,env,stor,bLocs)
+
 	end
 
 	return
