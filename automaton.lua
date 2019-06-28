@@ -632,10 +632,10 @@ function handle_H_REF(head,cPile,vPile,env,stor,bLocs)
 
 	locValue = getLocalization()	--valor da location em  si,sendo criado
 	locVar = loc.makeLoc(locValue)	--{"LOC",locValue}, nosso formato de Location
-	--tPrint(locVar)
+
 
 	expResp = pop(vPile)			--Pegamos o  resultado da expressao colocada pelo REF
-	--idResp = pop(vPile)
+
 	stor[locValue] = expResp		--E a salvamos na memoria, ligada pela nova location
 	
 
@@ -816,8 +816,8 @@ end
 function handle_DSEQ(head,cPile,vPile,env,stor,bLocs)
 	command1 = getFirst(head)
 	command2 = getSecond(head)
-	push(cPile,command1)
 	push(cPile,command2)
+	push(cPile,command1)
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
