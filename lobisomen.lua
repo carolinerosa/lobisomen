@@ -13,4 +13,3 @@ local entrada = f:read("*all")
 f:close()
 
 automaton.auto(parse.generator(entrada))
-

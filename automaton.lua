@@ -39,6 +39,7 @@ loc = require "localization"
 
 local automaton = {}
 
+
 function tLen(T) --Prasaber o tamanho da tabela | serio nao use  # nao eh deterministico
 	if T == nil then
 		return 0
@@ -56,11 +57,16 @@ function pop(pile)
 		table.remove(pile,lastIndex)
 		return value
 	end
+	return nil
 end
 
 function push(pile,head)
+
 	table.insert(pile,head) --como nao tem valor coloca no final
+	--print("tipo: ", type(pile), type(head))
+	
 end
+
 
 function tPrint(myTable)
 	if myTable==nil then
@@ -87,7 +93,36 @@ function tPrint(myTable)
 	end
 end
 
-function printAutomaton(head,cPile,vPile,env,stor)
+function printStorEnv(stor,env)
+	io.write("Env\t: {")
+	locID={}--usando o LOC salvarah o valor da  ID
+
+	for id,loc in pairs(env)do
+		io.write("[",id,"]=")
+		tPrint(loc)
+		io.write(",")
+		locID[getValue(loc)]=id
+		
+			
+	end
+	print("}")
+	
+	io.write("Stor\t: {")
+	for loc,val in pairs(stor)do
+		if(tLen(locID)==0)then
+			io.write("")
+		elseif (loc <= tLen(env))then
+			io.write("[",locID[loc],"]=")
+			tPrint(val)
+			io.write(",")
+		end
+	end
+	print("}")
+
+end
+
+
+function printAutomaton(head,cPile,vPile,env,stor,bLocs)
 	print("=========================================================================================================================")
 
 	io.write("Head\t: ")
@@ -99,11 +134,18 @@ function printAutomaton(head,cPile,vPile,env,stor)
 	io.write("vPile\t: ")
 	tPrint(vPile)
 	print("")
+
+	printStorEnv(stor,env)
+	--[[
 	io.write("Env\t: ")
 	tPrint(env)
 	print("")
 	io.write("Stor\t: ")
 	tPrint(stor)
+	print("")]]
+
+	io.write("bLocs\t: ")
+	tPrint(bLocs)
 	print("")
 
 	print("=========================================================================================================================")
@@ -111,15 +153,16 @@ end
 
 
 function getLocalization() --por enquanto sempre coloca no final do stor 
-	loc.getLoc()
-	location = loc.size
-	--print("LOCALIZATION IS : " location)
+	location = loc.getLoc()
+	--print("LOCALIZATION IS : " ,location)
 	return location
 end
 
 function getValue(head) --NUM,BOO,ID,LOC
 	category = head[1]
+	--print("ESSA EH A  CATEGORIA PEGA",category)
 	value = head[2]
+	--print("ESSE EH O VALOR",value)
 	if category == "NUM" then
 		return value
 	elseif category == "BOO" then
@@ -134,28 +177,35 @@ function getValue(head) --NUM,BOO,ID,LOC
 		end
 	elseif category == "ID" then
 		return value
+	elseif category == "ENV" then
+		return value
 	elseif category == "LOC" then
-		return value	 	
+		return value	
+	elseif category == "ENV" then
+		return value  	
 	end
 
 	print("Eh de um tipo nao implementado ou com erro")
 end
 
 function getStatement(head)
+
 	return head[1]
 end
 
 function getFirst(head) --{"Category",value1,value2,value3}
-	return head[2]
 
+	return head[2]
 end
 
 function getSecond(head)  --{"Category",value1,value2,value3}
+
 	return head[3]
 end
 
 function getThird(head)  --{"Category",value1,value2,value3}
-	return head[4]
+
+	return head[4]	
 end
 
 function makeNode(value,category)
@@ -163,97 +213,145 @@ function makeNode(value,category)
 	return node
 end
 
-function handle_NUM(head,cPile,vPile,env,stor)
+function typeCheck(left,right)
+	if getStatement(left)==getStatement(right) then
+		return true	
+	end
+	return false
+end
+
+
+function handle_NUM(head,cPile,vPile,env,stor,bLocs)
 	push(vPile,head)
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_SUM(head,cPile,vPile,env,stor)
+function handle_SUM(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#SUM"}
-	valueA = getFirst(head)
-	valueB = getSecond(head)
+	a = getFirst(head)
+	b = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueB)
-	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor)
+	push(cPile,b)
+	push(cPile,a)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_SUM(head,cPile,vPile,env,stor)--#SUM , soma dos dois primeiros itens em vPile
-	valueB = getValue(pop(vPile))
-	valueA = getValue(pop(vPile))
+function handle_H_SUM(head,cPile,vPile,env,stor,bLocs)--#SUM , soma dos dois primeiros itens em vPile
+	b = pop(vPile)
+	a = pop(vPile)
+
+	if not typeCheck(a,b) then
+		print("HOUVE UM ERRO! Tipos incompativeis!")
+		return
+	end
+
+	valueB = getValue(b)
+	valueA = getValue(a)
+
 
 	result = valueA + valueB
 	node= makeNode(result,"NUM")
 
 	push(vPile,node)
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_SUB(head,cPile,vPile,env,stor)
+function handle_SUB(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#SUB"}
-	valueA = getFirst(head)
-	valueB = getSecond(head)
+	a = getFirst(head)
+	b = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueB)
-	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor)
+	push(cPile,b)
+	push(cPile,a)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_SUB(head,cPile,vPile,env,stor)
-	valueB = getValue(pop(vPile))
-	valueA = getValue(pop(vPile))
+function handle_H_SUB(head,cPile,vPile,env,stor,bLocs)
+	b = pop(vPile)
+	a = pop(vPile)
+
+	if not typeCheck(a,b) then
+		print("HOUVE UM ERRO! Tipos incompativeis!")
+		return
+	end
+
+	valueB = getValue(b)
+	valueA = getValue(a)
+
 	result = valueA - valueB
 	push(vPile,makeNode(result,"NUM"))
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_MUL(head,cPile,vPile,env,stor)
+function handle_MUL(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#MUL"}
-	valueA = getFirst(head)
-	valueB = getSecond(head)
+	a = getFirst(head)
+	b = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueB)
-	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor)
+	push(cPile,b)
+	push(cPile,a)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_MUL(head,cPile,vPile,env,stor)
-	valueB = getValue(pop(vPile))
-	valueA = getValue(pop(vPile))
+function handle_H_MUL(head,cPile,vPile,env,stor,bLocs)
+	b = pop(vPile)
+	a = pop(vPile)
+
+	if not typeCheck(a,b) then
+		print("HOUVE UM ERRO! Tipos incompativeis!")
+		return
+	end
+
+	valueB = getValue(b)
+	valueA = getValue(a)
+
 	result = valueA * valueB
 	push(vPile,makeNode(result,"NUM"))
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_DIV(head,cPile,vPile,env,stor)
+function handle_DIV(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#DIV"}
-	valueA = getFirst(head)
-	valueB = getSecond(head)
+	a = getFirst(head)
+	b = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueB)
-	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor)
+	push(cPile,b)
+	push(cPile,a)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_DIV(head,cPile,vPile,env,stor)
-	valueB = getValue(pop(vPile))
-	valueA = getValue(pop(vPile))
+function handle_H_DIV(head,cPile,vPile,env,stor,bLocs)
+	b = pop(vPile)
+	a = pop(vPile)
+
+	if not typeCheck(a,b) then
+		print("HOUVE UM ERRO! Tipos incompativeis!")
+		return
+	end
+
+	if valueB == 0 then
+		print("Nao se pode dividir por 0")
+	end 
+
+	valueB = getValue(b)
+	valueA = getValue(a)
+
 	result = valueA / valueB
 	push(vPile,makeNode(result,"NUM"))
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_EQ(head,cPile,vPile,env,stor)
+function handle_EQ(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#EQ"}
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueB)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_EQ(head,cPile,vPile,env,stor)
+function handle_H_EQ(head,cPile,vPile,env,stor,bLocs)
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
 	if valueA == valueB then 
@@ -262,20 +360,20 @@ function handle_H_EQ(head,cPile,vPile,env,stor)
 		result = "FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_LT(head,cPile,vPile,env,stor)
+function handle_LT(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#LT"}
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueB)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_LT(head,cPile,vPile,env,stor)
+function handle_H_LT(head,cPile,vPile,env,stor,bLocs)
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
 	if valueA < valueB then 
@@ -284,42 +382,44 @@ function handle_H_LT(head,cPile,vPile,env,stor)
 		result = "FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_LE(head,cPile,vPile,env,stor)
+function handle_LE(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#LE"}
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueB)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor)
+	push(cPile,valueB)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_LE(head,cPile,vPile,env,stor)
+function handle_H_LE(head,cPile,vPile,env,stor,bLocs)
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
+	
+
 	if valueA <= valueB then 
 		result = "TRUE"
 	else
 		result = "FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_GT(head,cPile,vPile,env,stor)
+function handle_GT(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#GT"}
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
-	push(cPile,valueB)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor)
+	push(cPile,valueB)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_GT(head,cPile,vPile,env,stor)
+function handle_H_GT(head,cPile,vPile,env,stor,bLocs)
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
 	if valueA > valueB then 
@@ -328,20 +428,20 @@ function handle_H_GT(head,cPile,vPile,env,stor)
 		result = "FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_GE(head,cPile,vPile,env,stor)
+function handle_GE(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#GE"}
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueB)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_GE(head,cPile,vPile,env,stor)
+function handle_H_GE(head,cPile,vPile,env,stor,bLocs)
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
 	if valueA >= valueB then 
@@ -350,25 +450,25 @@ function handle_H_GE(head,cPile,vPile,env,stor)
 		result = "FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_BOO(head,cPile,vPile,env,stor)
+function handle_BOO(head,cPile,vPile,env,stor,bLocs)
 	push(vPile,head)
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_AND(head,cPile,vPile,env,stor)
+function handle_AND(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#AND"}
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueB)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_AND(head,cPile,vPile,env,stor)
+function handle_H_AND(head,cPile,vPile,env,stor,bLocs)
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
 	if valueA and valueB then
@@ -377,21 +477,20 @@ function handle_H_AND(head,cPile,vPile,env,stor)
 		result="FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-
-function handle_OR(head,cPile,vPile,env,stor)
+function handle_OR(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#OR"}
 	valueA = getFirst(head)
 	valueB = getSecond(head)
 	push(cPile,OP)
 	push(cPile,valueB)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_OR(head,cPile,vPile,env,stor)
+function handle_H_OR(head,cPile,vPile,env,stor,bLocs)
 	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
 	if valueA or valueB then
@@ -400,18 +499,18 @@ function handle_H_OR(head,cPile,vPile,env,stor)
 		result="FALSE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_NOT(head,cPile,vPile,env,stor)
+function handle_NOT(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#NOT"}
 	valueA = getFirst(head)
 	push(cPile,OP)
 	push(cPile,valueA)
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_NOT(head,cPile,vPile,env,stor)
+function handle_H_NOT(head,cPile,vPile,env,stor,bLocs)
 	value = getValue(pop(vPile)) --nesse caso apenas um valor
 	if value then
 		result="FALSE"
@@ -419,11 +518,10 @@ function handle_H_NOT(head,cPile,vPile,env,stor)
 		result="TRUE"
 	end
 	push(vPile,makeNode(result,"BOO"))
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-
-function handle_LOOP(head,cPile,vPile,env,stor)
+function handle_LOOP(head,cPile,vPile,env,stor,bLocs)
 	OP={"#LOOP"}
 	booExp= getFirst(head)
 
@@ -431,10 +529,10 @@ function handle_LOOP(head,cPile,vPile,env,stor)
 
 	push(cPile,OP)
 	push(cPile,booExp)
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_LOOP(head,cPile,vPile,env,stor)
+function handle_H_LOOP(head,cPile,vPile,env,stor,bLocs)
 	booValue= getValue(pop(vPile))
 	loop = pop(vPile)
 
@@ -444,10 +542,10 @@ function handle_H_LOOP(head,cPile,vPile,env,stor)
 		push(cPile,command)
 	end
 
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_COND(head,cPile,vPile,env,stor)
+function handle_COND(head,cPile,vPile,env,stor,bLocs)
 	OP={"#COND"}
 	booExp= getFirst(head)
 
@@ -456,10 +554,10 @@ function handle_COND(head,cPile,vPile,env,stor)
 	push(cPile,OP)
 	push(cPile,booExp)
 
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_COND(head,cPile,vPile,env,stor)
+function handle_H_COND(head,cPile,vPile,env,stor,bLocs)
 	booValue= getValue(pop(vPile))
 	cond = pop(vPile)
 	if booValue then --Pega o comando 1 ou o 2 
@@ -469,52 +567,260 @@ function handle_H_COND(head,cPile,vPile,env,stor)
 		command = getThird(cond)
 		push(cPile,command)
 	end
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_ID(head,cPile,vPile,env,stor)
+function handle_ID(head,cPile,vPile,env,stor,bLocs)
 	idValue = getValue(head)
 	idValue = idValue:gsub("%s", "")
-	headLoc = getValue(env[idValue][1])
-	headBindded = stor[headLoc][1] 
+	
+	headLoc = getValue(env[idValue])
+
+
+	headBindded = stor[headLoc] 
 	push(vPile,headBindded)
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_ASSIGN(head,cPile,vPile,env,stor)
+function handle_ASSIGN(head,cPile,vPile,env,stor,bLocs)
 	OP = {"#ASSIGN"}
 	id = getFirst(head)
 	exp = getSecond(head)
 
 	push(vPile,id)
 
-	push(cPile,OP) 		
+	push(cPile,OP)	
 	push(cPile,exp)
 
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_ASSIGN(head,cPile,vPile,env,stor)
+function handle_H_ASSIGN(head,cPile,vPile,env,stor,bLocs)
 	expValue = pop(vPile) 
 	id=pop(vPile)
 	idValue = getValue(id)
 	idValue = idValue:gsub("%s", "")
-	if (env[idValue]==nil) then
-		localization = getLocalization() 
-		env[idValue] = {loc.makeLoc(localization),id}		
-	end
-	localization = getValue(env[idValue][1])
-	stor[localization] = {expValue,id}
-	automaton.rec(cPile,vPile,env,stor)
+	
+	localization = getValue(env[idValue])
+
+	stor[localization] = expValue												
+
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_CSEQ(head,cPile,vPile,env,stor)
+function handle_CSEQ(head,cPile,vPile,env,stor,bLocs)
 	command1 = getFirst(head)
 	command2 = getSecond(head)
 	push(cPile,command2)
 	push(cPile,command1)
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
+
+------------------------------Parte 2------------------------------------------
+
+function handle_REF(head,cPile,vPile,env,stor,bLocs)
+	OP = {"#REF"}
+	exp = getFirst(head)
+
+	push(cPile,OP)
+	push(cPile,exp)
+
+	automaton.rec(cPile,vPile,env,stor,bLocs)
+end
+
+function handle_H_REF(head,cPile,vPile,env,stor,bLocs)
+
+	locValue = getLocalization()	--valor da location em  si,sendo criado
+	locVar = loc.makeLoc(locValue)	--{"LOC",locValue}, nosso formato de Location
+
+
+	expResp = pop(vPile)			--Pegamos o  resultado da expressao colocada pelo REF
+
+	stor[locValue] = expResp		--E a salvamos na memoria, ligada pela nova location
+	
+
+	push(bLocs,locVar) 				--Atualizando o Bloco de Locations com a locaion nova
+
+	push(vPile,locVar)				--Empilhamos uma Localization na pilhade valores
+	automaton.rec(cPile,vPile,env,stor,bLocs)
+end
+
+function handle_DEREF(head,cPile,vPile,env,stor,bLocs)
+	id=getFirst(head)
+	idvalue=getValue(id)
+
+	envData=env[idValue] 			--nao pegamos o valor pois devolve no formato que estiver, usualmente  LOC
+	push(vPile,envData)
+
+	automaton.rec(cPile,vPile,env,stor,bLocs)
+end
+
+function handle_VALREF(head,cPile,vPile,env,stor,bLocs)
+	id=getFirst(head)
+	idvalue=getValue(id)
+
+	envVal=getValue(env[idValue]) 	--Nesses dois abaixo temos que pegar o valor contido no lugar para ele poder ser usado como referencia
+	storVal=getValue(stor[envVal])
+	storData=stor[storVal] 			--equivale a stor[stor[env[idvalue]]]
+
+	push(vPile,storData)
+
+	automaton.rec(cPile,vPile,env,stor,bLocs)
+end
+
+function handle_BIND(head,cPile,vPile,env,stor,bLocs)
+	OP = {"#BIND"}
+	id = getFirst(head)
+	exp = getSecond(head)
+
+	push(vPile,id)
+
+	push(cPile, OP)
+	push(cPile,exp)
+
+	automaton.rec(cPile,vPile,env,stor,bLocs)
+end
+
+function handle_H_BIND(head,cPile,vPile,env,stor,bLocs)
+	--δ(#BIND :: C, B :: W :: V, E, S, L) = δ(C, [W ↦ B] :: V, E, S, L), 
+	bindable = pop(vPile)			--Este usualmente serah uma location que o REF terah deixado
+	id = pop(vPile)
+	H = pop(vPile)
+	newEnv = {}								--Onde criaremos um enviroment novo ou uniremos ENVs
+
+	if (H==nil) then 						
+		newEnv = {"ENV",{[getValue(id)]=bindable}} 
+	elseif (tLen(H)==0) then
+		push(vPile,H) 
+		newEnv = {"ENV",{[getValue(id)]=bindable}} 	
+	elseif  (getStatement(H) ~="ENV") then
+		push(vPile,H) 						
+		newEnv = {"ENV",{[getValue(id)]=bindable}}
+	else
+		--O codigo eh o mesmo que  isso -> H[2][getValue(id)] = bindable  , amas assim eh feio 
+		tempEnv = getValue(H)  				--se ja tem uma ENV ela pega o {"ENV", {...}}, porem como usamos getValue, tamo devolvendo o		
+		tempEnv[getValue(id)] = bindable 	--Atualizamos a table naquela posicao	
+		newEnv = {"ENV",tempEnv}		 	--Criamos no formato {"ENV", {...}} , para manter conscistencia 
+	end
+
+	--tPrint(newEnv)
+
+	push(vPile,newEnv)				--entao este eh empilhado na pilha de valores para  ser usado pelo BLK
+
+	automaton.rec(cPile,vPile,env,stor,bLocs)
+end
+
+function handle_BLK(head,cPile,vPile,env,stor,bLocs)
+	--δ(Blk(D, M) :: C, V, E, S, L) = δ(D :: #BLKDEC :: M :: #BLKCMD :: C, L :: V, E, S, ∅),
+	OPdec = {"#BLKDEC"}
+	OPcmd = {"#BLKCMD"}
+	dec = getFirst(head)
+	cmd = getSecond(head)
+	
+	push(cPile,OPcmd)		--Empilhando  #BLKCMD e M
+	push(cPile,cmd)
+	
+	push(cPile,OPdec)		--Empilhando  #BLKDEC e D
+	push(cPile,dec)
+
+
+	--if(tLen(bLocs) > 0)then
+	push(vPile,bLocs)
+	--end	
+		--Temos que colocar o conteudo do bLocs no vPile, e depois deixa-lo vazio
+	bLocs = {}
+	
+	automaton.rec(cPile,vPile,env,stor,bLocs)
+end
+
+function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)	--LEMBRE o ENV empilhado ta na forma {"ENV",{<Aqui eh o env de verdade}}, 
+		--ou seja, chame getValue na variavel que segurar o env da pilhade valores
+
+	--δ(#BLKDEC :: C, E' :: V, E, S, L) = δ(C, E :: V, E / E', S, L),
+	
+	newEnv = pop(vPile)
+	
+	newEnvValue = getValue(newEnv)
+
+	tempCopy={}
+
+	for i,v in pairs(env)do
+		tempCopy[i]=v
+	end
+
+	envCopy = {"ENV",tempCopy}
+	push(vPile,envCopy)
+	
+	-- env/newEnvValue
+	for newId,newValue in pairs(newEnvValue) do
+		env[newId]=newValue
+	end
+
+
+	if(tLen(env)==0) then
+		env = newEnvValue	
+	end
+	--O E' representado ai era pra falar de uma lista de mapas, mas como nao teremosuma varias declaracoes, teremos apenas 1 mapa
+	--Este mapa eh deixado pelo BIND,
+	--Temos que pegar o enviroment na pilha de valores e entao fazer E/E' que no caso soh significa pegar o mapa e atualizar o E
+	--Note o mapa esta no formato {"ENV",id,loc}, usamos o valor de id para indexar o loc (lembre de usar o getValue,getFirst e getSecond)
+
+	automaton.rec(cPile,vPile,env,stor,bLocs)
+end
+
+function isInbLocs(loc,bLocs) --loc 
+
+	for i,v in pairs(bLocs) do
+		if getValue(v) == loc then --se o valor  da location atualde bLocs, eh igual a loc
+			return true
+		end
+	end
+
+	return false
+end
+
+function handle_H_BLKCMD(head,cPile,vPile,env,stor,bLocs)
+
+	oldEnv = pop(vPile)
+	oldbLocs = pop(vPile)
+
+
+	for i,v in pairs(stor) do 			--note que i eh o valor de uma location
+		if isInbLocs(i,bLocs) then 	--se a location nao estiver em bLocs
+			stor[i]=nil					--setamos seu valor como nulo (eh a forma de lua limpar memoria)
+		end 
+	end
+
+	bLocs = oldbLocs
+
+
+	env = getValue(oldEnv)
+
+	
+
+	--δ(#BLKCMD :: C, E :: L :: V, E', S, L') = δ(C, V, E, S', L), where S' = S / L.
+	--Note que temos um E e um  L  na  pilha de valores, 
+	--O L foi colocado pelo handle_BLK, para voltarmos ao contexto  antes  do bloco ser iniciado
+	--O E foi colocado pelo handle_H_BLKDEC, para tambemvoltarmoso  ambiente para o que ele era antes
+	--Temos que desempilhar L e E
+	--Atualizar bLocs de L' para L
+	--E por ultimo algo que passe pelo store e cheque se o index do stor equivale ao valor de um dos locs em L
+	--Ex : stor[1]="bola" stor[2]="figo" stor[3]="cabra" stor[4]="bala"  L={1,2,3} (lembrando que nao sao numerosapenas mas {"LOC",<valor>},entao getValue)
+	--     S' deve ser : stor[1]="bola" stor[2]="figo" stor[3]="cabra".
+	--Lembre-se  que temor for i,v in pairs(mytable) do  , onde o i eh o index e v eh o valor, isso facilita
+
+
+	automaton.rec(cPile,vPile,env,stor,bLocs)
+end
+
+function handle_DSEQ(head,cPile,vPile,env,stor,bLocs)
+	command1 = getFirst(head)
+	command2 = getSecond(head)
+	push(cPile,command2)
+	push(cPile,command1)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
+end
+
 
 handlers =
     {
@@ -551,27 +857,45 @@ handlers =
         ["#COND"]=handle_H_COND,
         ["ASSIGN"]=handle_ASSIGN,
         ["#ASSIGN"]=handle_H_ASSIGN,
-        ["CSEQ"]=handle_CSEQ
+        ["CSEQ"]=handle_CSEQ,
+        --Parte 2
+        ["REF"]=handle_REF,
+        ["#REF"]=handle_H_REF,
+        ["DEREF"]=handle_DEREF,
+        ["VALREF"]=handle_VALREF,
+        ["BIND"]=handle_BIND,
+        ["#BIND"]=handle_H_BIND,
+        ["BLK"]=handle_BLK,
+        ["#BLKDEC"]=handle_H_BLKDEC,
+        ["#BLKCMD"]=handle_H_BLKCMD,
+        ["DSEQ"]=handle_DSEQ
+        --["CNS"]=handle_CNS       	Em vez de apontar pra uma location, aponta para um numero
+        --["LOC"]=handle_LOC		Talvez usar para poder printar LOC,trata como NUM e BOO
     }
 
 --Funcao recursiva simples que apenas ve o que eh pedido e envia para outra funcao
-function automaton.rec(cPile,vPile,env,stor)
+function automaton.rec(cPile,vPile,env,stor,bLocs)
 	if tLen(cPile) == 0 then  
 
 		head = {}--apenas limpando o Head para a impressao do resultado.
 		print("O resultado foi : ")
-		printAutomaton(head,cPile,vPile,env,stor)
+		printAutomaton(head,cPile,vPile,env,stor,bLocs)
 
 		return
 	else 
 
 		head = pop(cPile)
+		
 
-		printAutomaton(head,cPile,vPile,env,stor)
+
+	
+		
+		printAutomaton(head,cPile,vPile,env,stor,bLocs)
 
 		stat=getStatement(head) --stat para statement, pois pode  ser operacao ou comando
+		
+		handlers[stat](head,cPile,vPile,env,stor,bLocs)
 
-		handlers[stat](head,cPile,vPile,env,stor)
 	end
 
 	return
@@ -583,11 +907,17 @@ function automaton.auto(tree)
 	vPile={} 	--value pile
 	env={} 	 	--enviroment
 	stor={}   	--storage
+	bLocs={} 	--Block Locations
+	--print={} 	--Print List
 	loc.init() 	--inicializando o loc 
+	
+	--print("tipo: ", type(tree), type(cPile))
+
+	--tPrint(tree)
 
 	push(cPile,tree)
 
-	automaton.rec(cPile,vPile,env,stor)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
 
 end
 
