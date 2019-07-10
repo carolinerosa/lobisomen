@@ -686,7 +686,7 @@ function handle_H_BIND(head,cPile,vPile,env,stor,bLocs)
 	bindable = pop(vPile)			--Este usualmente serah uma location que o REF terah deixado
 	id = pop(vPile)
 	H = pop(vPile)
-	newEnv = {}								--Onde criaremos um enviroment novo ou uniremos ENVs
+	newEnv = {}						--Onde criaremos um enviroment novo ou uniremos ENVs
 
 	if (H==nil) then 						
 		newEnv = {"ENV",{[getValue(id)]=bindable}} 
@@ -697,6 +697,7 @@ function handle_H_BIND(head,cPile,vPile,env,stor,bLocs)
 		push(vPile,H) 						
 		newEnv = {"ENV",{[getValue(id)]=bindable}}
 	else
+
 		--O codigo eh o mesmo que  isso -> H[2][getValue(id)] = bindable  , amas assim eh feio 
 		tempEnv = getValue(H)  				--se ja tem uma ENV ela pega o {"ENV", {...}}, porem como usamos getValue, tamo devolvendo o		
 		tempEnv[getValue(id)] = bindable 	--Atualizamos a table naquela posicao	
@@ -754,10 +755,6 @@ function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)	--LEMBRE o ENV empilha
 	if(tLen(env)==0) then
 		env = newEnvValue	
 	end
-	--O E' representado ai era pra falar de uma lista de mapas, mas como nao teremosuma varias declaracoes, teremos apenas 1 mapa
-	--Este mapa eh deixado pelo BIND,
-	--Temos que pegar o enviroment na pilha de valores e entao fazer E/E' que no caso soh significa pegar o mapa e atualizar o E
-	--Note o mapa esta no formato {"ENV",id,loc}, usamos o valor de id para indexar o loc (lembre de usar o getValue,getFirst e getSecond)
 
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
@@ -790,17 +787,6 @@ function handle_H_BLKCMD(head,cPile,vPile,env,stor,bLocs)
 
 	env = getValue(oldEnv)
 
-	--δ(#BLKCMD :: C, E :: L :: V, E', S, L') = δ(C, V, E, S', L), where S' = S / L.
-	--Note que temos um E e um  L  na  pilha de valores, 
-	--O L foi colocado pelo handle_BLK, para voltarmos ao contexto  antes  do bloco ser iniciado
-	--O E foi colocado pelo handle_H_BLKDEC, para tambemvoltarmoso  ambiente para o que ele era antes
-	--Temos que desempilhar L e E
-	--Atualizar bLocs de L' para L
-	--E por ultimo algo que passe pelo store e cheque se o index do stor equivale ao valor de um dos locs em L
-	--Ex : stor[1]="bola" stor[2]="figo" stor[3]="cabra" stor[4]="bala"  L={1,2,3} (lembrando que nao sao numerosapenas mas {"LOC",<valor>},entao getValue)
-	--     S' deve ser : stor[1]="bola" stor[2]="figo" stor[3]="cabra".
-	--Lembre-se  que temor for i,v in pairs(mytable) do  , onde o i eh o index e v eh o valor, isso facilita
-
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
@@ -825,27 +811,120 @@ end
 
 function handle_CALL(head,cPile,vPile,env,stor,bLocs)
 	id = getFirst(head)
-	formals = getSecond(head)
+	actuals = getSecond(head)
 
-	u = tLen(formals)
+	u = tLen(actuals)
 	OPcode = {"#CALL",id,u}
 	push(cPile,OPcode)
 
-	for i,x in pairs(formals) do 
+	for i,x in pairs(actuals) do 
 		push(cPile,x)	
 	end
 
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_H_CALL(head,cPile,vPile,env,stor,bLocs)
+function match_aux(f,v,e)
+	if (f == {} and v == {})then
+		return e 
+	else
+		envHolder = getFirst(e)
+		formalHolder = pop(f)
+		valueHolder = pop(v)
+
+		envHolder[formalHolder]=valueHolder
+
+		e = {"ENV", envHolder}
+
+		return match_aux(f,v,e)
+	end
+end 
+
+function match(f,v)
+	respENV = {"ENV",{}}
+	if tLen(f) ~= tLen(v) then 
+		return respENV
+	else
+		return match_aux(f,v,respENV)
+	end
+end
+
+function overrideTables(t1,t2)
+
+	if (tLen(t2) ~= 0) then
+		for i,v in pairs(t2)do
+			t1[i]=v
+		end
+	end
+
+	return t1
+end
+
+function handle_H_CALL(head,cPile,vPile,env,stor,bLocs) 
+	id = getFirst(head)
+	u = getSecond(head)
+
+	closure = env[id] --que pode ser apenas Closure ou REC
+	closureType = getStatement(closure)
+
+	formals = getFirst(closure)
+	block = getSecond(closure)
+	
+	values = {}
+	for i=1,u,+1 do
+		values[i] = pop(vPile) --[V₁, V₂, ..., Vᵤ]
+	end 
+
+	--O que precisa ser empilhado em caso de CLOSURE e de REC
+
+	E = env
+	E[id] = closure   -- E = {I ↦ Closure(F, B, E₁)} ∪ E₂  ou  E = {I ↦ Rec(F, B, E₁, E₂)} ∪ E₃
+
+	OPcode = {"#BLKCMD"}
+
+	push(cPile,OPcode) --𝛅(B :: #BLKCMD :: C, E :: V, E', S, L), 
+	push(cPile,block)
+	push(vPile,E)
+
+	--Criando o novo enviroment E'
+
+	matched = match(formals,values) --match(F, [V₁, V₂, ..., Vᵤ])
+
+	Elinha = {}
+
+	if (closureType == "CLOSURE") then
+		--E'= E / E₁ / match(F, [V₁, V₂, ..., Vᵤ])
+		E1 = closure[4]
+
+		Elinha = overrideTables(E,E1)
+		Elinha = overrideTables(Elinha,matched)
+
+	elseif (closureType == "REC") then -- nao terminado
+		--E' = E / E₁ / unfold(E₂) / match(F, [V₁, V₂, ..., Vᵤ]).
+		E1 = closure[4]
+		E2 = closure[5]
+		--unfoldedE2 = unfold(E2)
+
+		Elinha = overrideTables(E,E1)
+		--Elinha = overrideTables(Elinha,unfoldedE2)
+		Elinha = overrideTables(Elinha,matched)
+
+	else 
+		print("Erro. Esperado um tipo de Closure")
+	end 
+
+	env = Elinha --𝛅(B :: #BLKCMD :: C, E :: V, E', S, L), 
+	
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
 function handle_RBND(head,cPile,vPile,env,stor,bLocs)
+	id = getFirst(head)
+
+
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
-						
+
 function handle_NOP(head,cPile,vPile,env,stor,bLocs)
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
@@ -974,51 +1053,6 @@ FAC = {"BLK",{"BIND",{"ID","z"},{"REF",{"NUM",1}}},
 		}
 }
 automaton.auto(FAC)
-
---Testes podem ser feitos sem o parser
---[[
-exTree1 = {"SUM",{"NUM",6},{"NUM",2}}
-exTree2 = {"SUB",{"NUM",6},{"NUM",2}}
-exTree3 = {"MUL",{"NUM",6},{"NUM",2}}
-exTree4 = {"DIV",{"NUM",6},{"NUM",2}}
-exTree5 = {"EQ",{"NUM",4},{"NUM",3}}
-exTree6 = {"LT",{"NUM",4},{"NUM",3}}
-exTree7 = {"LE",{"NUM",4},{"NUM",3}}
-exTree8 = {"GT",{"NUM",4},{"NUM",3}}
-exTree9 = {"GE",{"NUM",4},{"NUM",3}}
-exTree10 = {"AND",{"BOO","TRUE"},{"GT",{"NUM",4},{"NUM",3}}}
-exTree11 = {"OR",{"BOO","TRUE"},{"GT",{"NUM",4},{"NUM",3}}}
-exTree12 = {"NOT", {"LE",{"NUM",5},{"NUM",6}}} 
-exTree13 = {"ASSIGN", {"ID", "bola"}, {"NUM",3}} 
-exTree14 = {"COND", exTree10 , exTree1 , exTree3 }
-exTree15 = {"LOOP", exTree11 , exTree3}
-exTree16 = {"CSEQ", exTree13 , {"SUM",{"ID","bola"},{"NUM",2}} }
-exTree17 = {"AND",{"BOO","TRUE"},{"NUM",3}}
-exTree18 = {"CSEQ", {"ASSIGN", {"ID", "bola"}, {"NUM",3}}  , {"ASSIGN", {"ID", "ogro"}, {"NUM",7}} }
-exTree19 = {"CSEQ", exTree13 , {"LOOP", {"GT",{"ID","bola"},{"NUM",0}} , {"SUB",{"ID","bola"},{"NUM",1}}} }
-]]
---[[
-automaton.auto(exTree1)
-automaton.auto(exTree2)
-automaton.auto(exTree3)
-automaton.auto(exTree4)
-automaton.auto(exTree5)
-automaton.auto(exTree6)
-automaton.auto(exTree7)
-automaton.auto(exTree8)
-automaton.auto(exTree9)
-automaton.auto(exTree10)
-automaton.auto(exTree11)
-automaton.auto(exTree12)
-automaton.auto(exTree13)
-
---automaton.auto(exTree14)
---automaton.auto(exTree15)
---automaton.auto(exTree16)
---automaton.auto(exTree17)
---automaton.auto(exTree18)
---automaton.auto(exTree19)
-]]
 
 
 return automaton
