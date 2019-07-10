@@ -703,8 +703,6 @@ function handle_H_BIND(head,cPile,vPile,env,stor,bLocs)
 		newEnv = {"ENV",tempEnv}		 	--Criamos no formato {"ENV", {...}} , para manter conscistencia 
 	end
 
-	--tPrint(newEnv)
-
 	push(vPile,newEnv)				--entao este eh empilhado na pilha de valores para  ser usado pelo BLK
 
 	automaton.rec(cPile,vPile,env,stor,bLocs)
@@ -723,11 +721,8 @@ function handle_BLK(head,cPile,vPile,env,stor,bLocs)
 	push(cPile,OPdec)		--Empilhando  #BLKDEC e D
 	push(cPile,dec)
 
-
-	--if(tLen(bLocs) > 0)then
+	--Temos que colocar o conteudo do bLocs no vPile, e depois deixa-lo vazio
 	push(vPile,bLocs)
-	--end	
-		--Temos que colocar o conteudo do bLocs no vPile, e depois deixa-lo vazio
 	bLocs = {}
 	
 	automaton.rec(cPile,vPile,env,stor,bLocs)
@@ -751,7 +746,6 @@ function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)	--LEMBRE o ENV empilha
 	envCopy = {"ENV",tempCopy}
 	push(vPile,envCopy)
 	
-	-- env/newEnvValue
 	for newId,newValue in pairs(newEnvValue) do
 		env[newId]=newValue
 	end
@@ -770,8 +764,8 @@ end
 
 function isInbLocs(loc,bLocs) --loc 
 
-	for i,v in pairs(bLocs) do
-		if getValue(v) == loc then --se o valor  da location atualde bLocs, eh igual a loc
+	for index,locationInbLocs in pairs(bLocs) do
+		if getValue(locationInbLocs) == loc then --se o valor  da location atualde bLocs, eh igual a loc
 			return true
 		end
 	end
@@ -796,8 +790,6 @@ function handle_H_BLKCMD(head,cPile,vPile,env,stor,bLocs)
 
 	env = getValue(oldEnv)
 
-	
-
 	--δ(#BLKCMD :: C, E :: L :: V, E', S, L') = δ(C, V, E, S', L), where S' = S / L.
 	--Note que temos um E e um  L  na  pilha de valores, 
 	--O L foi colocado pelo handle_BLK, para voltarmos ao contexto  antes  do bloco ser iniciado
@@ -809,7 +801,6 @@ function handle_H_BLKCMD(head,cPile,vPile,env,stor,bLocs)
 	--     S' deve ser : stor[1]="bola" stor[2]="figo" stor[3]="cabra".
 	--Lembre-se  que temor for i,v in pairs(mytable) do  , onde o i eh o index e v eh o valor, isso facilita
 
-
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
@@ -820,6 +811,45 @@ function handle_DSEQ(head,cPile,vPile,env,stor,bLocs)
 	push(cPile,command1)
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
+
+function handle_ABS(head,cPile,vPile,env,stor,bLocs)
+	formals = getFirst(head)
+	blk = getSecond(head)
+
+	closure = {"CLOSURE",formals,blk,env}
+
+	push(vPile,closure)
+
+	automaton.rec(cPile,vPile,env,stor,bLocs)
+end
+
+function handle_CALL(head,cPile,vPile,env,stor,bLocs)
+	id = getFirst(head)
+	formals = getSecond(head)
+
+	u = tLen(formals)
+	OPcode = {"#CALL",id,u}
+	push(cPile,OPcode)
+
+	for i,x in pairs(formals) do 
+		push(cPile,x)	
+	end
+
+	automaton.rec(cPile,vPile,env,stor,bLocs)
+end
+
+function handle_H_CALL(head,cPile,vPile,env,stor,bLocs)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
+end
+
+function handle_RBND(head,cPile,vPile,env,stor,bLocs)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
+end
+						
+function handle_NOP(head,cPile,vPile,env,stor,bLocs)
+	automaton.rec(cPile,vPile,env,stor,bLocs)
+end
+
 
 
 handlers =
@@ -868,9 +898,13 @@ handlers =
         ["BLK"]=handle_BLK,
         ["#BLKDEC"]=handle_H_BLKDEC,
         ["#BLKCMD"]=handle_H_BLKCMD,
-        ["DSEQ"]=handle_DSEQ
-        --["CNS"]=handle_CNS       	Em vez de apontar pra uma location, aponta para um numero
-        --["LOC"]=handle_LOC		Talvez usar para poder printar LOC,trata como NUM e BOO
+		["DSEQ"]=handle_DSEQ,
+		--Parte 3
+		["ABS"]=handle_ABS,
+		["CALL"]=handle_CALL,
+		["#CALL"]=handle_H_CALL,
+		["RBND"]=handle_RBND,
+		["NOP"]=handle_NOP
     }
 
 --Funcao recursiva simples que apenas ve o que eh pedido e envia para outra funcao
@@ -886,16 +920,13 @@ function automaton.rec(cPile,vPile,env,stor,bLocs)
 
 		head = pop(cPile)
 		
-
-
-	
-		
+		--O print abaixo eh o que fica sendo ocorrendo a cada interacao 
 		printAutomaton(head,cPile,vPile,env,stor,bLocs)
 
 		stat=getStatement(head) --stat para statement, pois pode  ser operacao ou comando
 		
 		handlers[stat](head,cPile,vPile,env,stor,bLocs)
-
+ 
 	end
 
 	return
@@ -911,7 +942,7 @@ function automaton.auto(tree)
 	--print={} 	--Print List
 	loc.init() 	--inicializando o loc 
 	
-	--print("tipo: ", type(tree), type(cPile))
+	--print("tipo: ", type(tree), type(cPile))n
 
 	--tPrint(tree)
 
@@ -921,6 +952,28 @@ function automaton.auto(tree)
 
 end
 
+FAC = {"BLK",{"BIND",{"ID","z"},{"REF",{"NUM",1}}},
+		{"BLK",{"RBND",{"ID","FAT"},
+						{"ABS",{"ID","y"},
+							{"BLK",{"BIND",{"ID","x"},{"REF",{"ID","y"}}},
+								{"CSEQ",
+									{"COND",{"GT",{"ID","x"},{"NUM",2}},
+											{"ASSIGN",{"ID","z"},
+												{"CALL",{"ID","FAT"},
+													{"SUB",{"ID","x"},{"NUM",1}}
+												}
+											},
+											{"NOP"}
+									},
+									{"ASSIGN",{"ID","x"},{"MUL",{"ID","x"},{"ID","z"}}}
+								}
+							}											
+						}
+				},
+				{"CALL",{"ID","FAT"},{"NUM",3}}
+		}
+}
+automaton.auto(FAC)
 
 --Testes podem ser feitos sem o parser
 --[[
