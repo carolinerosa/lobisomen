@@ -611,8 +611,8 @@ function handle_ID(head,cPile,vPile,env,stor,bLocs)
 	idValue = idValue:gsub("%s", "")
 
 	coisa = env[idValue]
-	print("cooooooooooooisa")
-	tPrint(coisa)
+	--print("cooooooooooooisa")
+	--tPrint(coisa)
 	if getStatement(coisa) == "LOC" then
 		headLoc = getValue(coisa)
 
@@ -932,7 +932,6 @@ function handle_H_CALL(head,cPile,vPile,env,stor,bLocs)
 	idValue = getValue(id)
 	u = getSecond(head)
 
-	bLocs = {}
 
 	closure = env[idValue] --que pode ser apenas Closure ou REC
 	closureType = getStatement(closure)
