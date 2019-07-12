@@ -809,6 +809,8 @@ function handle_ABS(head,cPile,vPile,env,stor,bLocs)
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
+--------------------------PARTE 3---------------------------------
+
 function handle_CALL(head,cPile,vPile,env,stor,bLocs)
 	id = getFirst(head)
 	actuals = getSecond(head)
@@ -862,9 +864,10 @@ end
 
 function handle_H_CALL(head,cPile,vPile,env,stor,bLocs) 
 	id = getFirst(head)
+	idValue = getValue(id)
 	u = getSecond(head)
 
-	closure = env[id] --que pode ser apenas Closure ou REC
+	closure = env[idValue] --que pode ser apenas Closure ou REC
 	closureType = getStatement(closure)
 
 	formals = getFirst(closure)
@@ -878,13 +881,14 @@ function handle_H_CALL(head,cPile,vPile,env,stor,bLocs)
 	--O que precisa ser empilhado em caso de CLOSURE e de REC
 
 	E = env
-	E[id] = closure   -- E = {I ↦ Closure(F, B, E₁)} ∪ E₂  ou  E = {I ↦ Rec(F, B, E₁, E₂)} ∪ E₃
+	E[idValue] = closure   -- E = {I ↦ Closure(F, B, E₁)} ∪ E₂  ou  E = {I ↦ Rec(F, B, E₁, E₂)} ∪ E₃
+	Eformatted = {"ENV",E}
 
 	OPcode = {"#BLKCMD"}
 
 	push(cPile,OPcode) --𝛅(B :: #BLKCMD :: C, E :: V, E', S, L), 
 	push(cPile,block)
-	push(vPile,E)
+	push(vPile,Eformatted)
 
 	--Criando o novo enviroment E'
 
@@ -894,21 +898,20 @@ function handle_H_CALL(head,cPile,vPile,env,stor,bLocs)
 
 	if (closureType == "CLOSURE") then
 		--E'= E / E₁ / match(F, [V₁, V₂, ..., Vᵤ])
-		E1 = closure[4]
+		E1 = getValue(closure[4])
 
 		Elinha = overrideTables(E,E1)
 		Elinha = overrideTables(Elinha,matched)
 
 	elseif (closureType == "REC") then -- nao terminado
 		--E' = E / E₁ / unfold(E₂) / match(F, [V₁, V₂, ..., Vᵤ]).
-		E1 = closure[4]
+		E1 = getValue(closure[4])
 		E2 = closure[5]
-		--unfoldedE2 = unfold(E2)
+		unfoldedE2 = getValue(unfold(E2))
 
 		Elinha = overrideTables(E,E1)
-		--Elinha = overrideTables(Elinha,unfoldedE2)
+		Elinha = overrideTables(Elinha,unfoldedE2)
 		Elinha = overrideTables(Elinha,matched)
-
 	else 
 		print("Erro. Esperado um tipo de Closure")
 	end 
@@ -918,9 +921,50 @@ function handle_H_CALL(head,cPile,vPile,env,stor,bLocs)
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function handle_RBND(head,cPile,vPile,env,stor,bLocs)
-	id = getFirst(head)
+function unfold(enviroment)--Unfold Recebe uma ENV e retorna uma ENV. {"ENV", {...}} -> {"ENV", {...}}
+	e = getValue(enviroment) --Pegando a  table contendo o  enviroment em si
 
+	if tLen(e) == 0 then
+		return nil
+	elseif tLen(e) > 1 then 
+		for i,v in pairs(e)do
+			unfold(v)
+		end
+	else
+		for i,v in pairs(e)do --Sempre eh executado apenas uma vez
+			closureType = getStatement(v)
+
+			if closureType == "CLOSURE"then
+				F = v[2]
+				B = v[3]
+				E1 = v[4]
+				
+				e[i]= {"REC",F,B,E1,e}
+			elseif closureType == "REC"then
+				F = v[2]
+				B = v[3]
+				E1 = v[4]
+
+				e[i]= {"REC",F,B,E1,e}
+			else
+				--nop
+			end
+
+			break;
+
+		end
+	end
+end
+
+function handle_RBND(head,cPile,vPile,env,stor,bLocs)
+	--𝛅(Rbnd(I, Abs(F, B)) :: C, V, E, S, L) = 𝛅(C, unfold(I ↦ Closure(F, B, E)) :: V, E, S, L),
+	id = getFirst(head)
+	abs = getSecond(head)
+	closure = {"CLOSURE",getFirst(abs),getSecond(abs),env}
+	foldedENV = {"ENV", {[getValue(id)]=closure} }
+
+	unfoldedENV = unfold(foldedENV)
+	push(cPile,unfoldedENV)
 
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
