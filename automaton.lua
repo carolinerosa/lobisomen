@@ -456,8 +456,8 @@ function handle_GT(head,cPile,vPile,env,stor,bLocs)
 end
 
 function handle_H_GT(head,cPile,vPile,env,stor,bLocs)
-	valueB = getValue(pop(vPile))
 	valueA = getValue(pop(vPile))
+	valueB = getValue(pop(vPile))
 	if valueA > valueB then 
 		result = "TRUE"
 	else
@@ -611,7 +611,8 @@ function handle_ID(head,cPile,vPile,env,stor,bLocs)
 	idValue = idValue:gsub("%s", "")
 
 	coisa = env[idValue]
-
+	print("cooooooooooooisa")
+	tPrint(coisa)
 	if getStatement(coisa) == "LOC" then
 		headLoc = getValue(coisa)
 
@@ -1155,7 +1156,7 @@ function automaton.rec(cPile,vPile,env,stor,bLocs)
 
 		--TIMER = TIMER + 1 
 
-		if TIMER < 20 then
+		if TIMER < 48 then
 			handlers[stat](head,cPile,vPile,env,stor,bLocs)
 		end
  

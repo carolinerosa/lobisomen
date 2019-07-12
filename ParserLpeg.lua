@@ -105,7 +105,7 @@ function typeIf(left, op, right, ...)
 		local seFalse
 		local tamTrue = #arg
 
-		--print("temos x comandos: ", #arg)
+		print("temos x comandos COND: ", #arg)
 		if(#arg >1) then
 			atual = #arg
 			while atual>0 do
@@ -142,7 +142,10 @@ function typeIf(left, op, right, ...)
 			end
 
 		else
-			resp = arg[1]
+			seTrue = arg[1]
+			seFalse = {}
+
+
 		end
 		return { left, op, seTrue,seFalse}
 end
@@ -186,7 +189,7 @@ function typeLet(left, op, right, ...)
 	local atual=2
 	local resp = right
 		
-	--print("temos x comandos: ", #arg)
+	print("temos x comandos: ", #arg)
 	
 	
 	if(atual <=#arg and (arg[atual][1]=="BIND" or  arg[atual][1]=="RBND")) then
@@ -218,9 +221,12 @@ function typeLet(left, op, right, ...)
 		return { left, resp[1],resp[2]}
 	
 	end
-	if((atual) <#arg and (arg[atual][1]~="BIND" or  arg[atual][1]~="RBND")) then
 
-		--print("não e bind", arg[(atual-1)][1])
+	atual = atual +1
+	print("vai comecar")
+	if((atual) <=#arg and (arg[atual][1]~="BIND" or  arg[atual][1]~="RBND")) then
+
+		print("não e bind", arg[(atual-1)][1])
 		resp = {"CSEQ",arg[atual-1], arg[atual]} 
 		atual = atual +1
 		while atual<=#arg  do
@@ -426,4 +432,5 @@ function parse.generator(s)
 end
 
 return parse
+
 

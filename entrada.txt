@@ -1,10 +1,12 @@
-let var a = 1
+let var z = 1
     in
-    let rec fn fy(x,y,z) = 
-        let var t = 1 
+    let rec fn fy(y) = 
+        let var x = y 
         in 
-            if z>2 then a:=0 else a:=a+1 f(x,y,a) end
+            if x>2 then fy(x-1) else x :=x end
+	    z := x * z
         end
-    in fy(2,4,1)
+    in fy(3)
     end
 end
+
