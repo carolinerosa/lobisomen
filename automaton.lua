@@ -874,7 +874,7 @@ function handle_H_CALL(head,cPile,vPile,env,stor,bLocs)
 	block = getSecond(closure)
 	
 	values = {}
-	for i=1,u,+1 do
+	for i=1,u,1 do
 		values[i] = pop(vPile) --[V₁, V₂, ..., Vᵤ]
 	end 
 
@@ -924,9 +924,9 @@ end
 function unfold(enviroment)--Unfold Recebe uma ENV e retorna uma ENV. {"ENV", {...}} -> {"ENV", {...}}
 	e = getValue(enviroment) --Pegando a  table contendo o  enviroment em si
 
-	if tLen(e) == 0 then
+	if tLen(e) == 0 then --recloseₑ(∅) = ∅.
 		return nil
-	elseif tLen(e) > 1 then 
+	elseif tLen(e) > 1 then -- recloseₑ(e₁ ∪ e₂) = recloseₑ(e₁) ∪ recloseₑ(e₂),
 		for i,v in pairs(e)do
 			unfold(v)
 		end
@@ -934,24 +934,23 @@ function unfold(enviroment)--Unfold Recebe uma ENV e retorna uma ENV. {"ENV", {.
 		for i,v in pairs(e)do --Sempre eh executado apenas uma vez
 			closureType = getStatement(v)
 
-			if closureType == "CLOSURE"then
+			if closureType == "CLOSURE"then --recloseₑ(I ↦ Closure(F, B, E′)) = (I ↦ Rec(F, B, E′, e)),
 				F = v[2]
 				B = v[3]
 				E1 = v[4]
 				
 				e[i]= {"REC",F,B,E1,e}
-			elseif closureType == "REC"then
+			elseif closureType == "REC"then --recloseₑ(I ↦ Rec(F, B, E′, E′′)) = (I ↦ Rec(F, B, E′, e)),
 				F = v[2]
 				B = v[3]
 				E1 = v[4]
 
-				e[i]= {"REC",F,B,E1,e}
+				e[i]= {"REC",F,B,E1,e} --recloseₑ(I ↦ v) = (I ↦ v) if v ≠ Closure(F, B, E),
 			else
 				--nop
 			end
 
 			break;
-
 		end
 	end
 end
@@ -1096,7 +1095,7 @@ FAC = {"BLK",{"BIND",{"ID","z"},{"REF",{"NUM",1}}},
 				{"CALL",{"ID","FAT"},{"NUM",3}}
 		}
 }
-automaton.auto(FAC)
+--automaton.auto(FAC)
 
 
 return automaton
