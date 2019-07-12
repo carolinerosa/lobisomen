@@ -927,9 +927,16 @@ function unfold(enviroment)--Unfold Recebe uma ENV e retorna uma ENV. {"ENV", {.
 	if tLen(e) == 0 then --recloseₑ(∅) = ∅.
 		return nil
 	elseif tLen(e) > 1 then -- recloseₑ(e₁ ∪ e₂) = recloseₑ(e₁) ∪ recloseₑ(e₂),
+		respENV = {}
 		for i,v in pairs(e)do
-			unfold(v)
+			tempENV = getValue(unfold(v))
+			if tLen(tempENV)~= 0 then
+				for index,value in pairs(tempENV)do
+					respENV[index] = value
+				end
+			end
 		end
+		return respENV
 	else
 		for i,v in pairs(e)do --Sempre eh executado apenas uma vez
 			closureType = getStatement(v)
@@ -949,6 +956,8 @@ function unfold(enviroment)--Unfold Recebe uma ENV e retorna uma ENV. {"ENV", {.
 			else
 				--nop
 			end
+
+			return e
 
 			break;
 		end
@@ -1095,7 +1104,7 @@ FAC = {"BLK",{"BIND",{"ID","z"},{"REF",{"NUM",1}}},
 				{"CALL",{"ID","FAT"},{"NUM",3}}
 		}
 }
---automaton.auto(FAC)
+--gautomaton.auto(FAC)
 
 
 return automaton
