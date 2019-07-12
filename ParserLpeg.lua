@@ -35,6 +35,7 @@ local valRefValue = white * lpeg.C("&")
 
 --[[regras de fn]]
 local fnValue = white * lpeg.C("fn")
+local fnRecValue = white * lpeg.C("fn")
 
 
 function typeSum()
@@ -247,8 +248,20 @@ function typeFn(left, op, right,...)
     --[[verificar onde termina o abs]]
     local abs={right,...}	
     local arg = {}
+    abs = {"ABS",right,...}
+    
+    
+    return{"BIND",id,  abs}   
+end
+
+
+function typeFnRec(left, op, right,...)
+	id= right
+    --[[verificar onde termina o abs]]
+    local abs={...}	
+    local arg = {}
 	
-        table.insert(arg,right)
+        table.insert(arg,abs[1])
     --print("temos x comandos: ", #arg)
     atual = 2
 	while(atual < (#abs-1)) do
@@ -263,8 +276,9 @@ function typeFn(left, op, right,...)
     abs = {"ABS",abs,arg[atual]}
     
     
-    return{"BIND",id,  abs}   
+    return{"RBIND",id,  abs}   
 end
+
 
 transformType =
     {
@@ -288,7 +302,8 @@ transformType =
 	["const"]=typeConst,
 	["*Pont"]=typeDeRef,
 	["&Pont"]=typeValRef,
-	["fn"]=typeFn
+	["fn"]=typeFn,
+	["rec"]=typeFn
     }
 	
 
@@ -375,10 +390,11 @@ end
 local transformImp = lpeg.P({
 	"s",
 	s = impFinal(lpeg.V("cmd")^1),
-	cmd = ((spc * "let" * spc *(lpeg.V("fn") ) )+lpeg.V("let")+(lpeg.V("assign") + lpeg.V("loop") +lpeg.V("cond") ) * (white + -1)),
+	cmd = ((spc * "let" * spc *((lpeg.V("fn") + lpeg.V("fnRec")) ) )+lpeg.V("let")+(lpeg.V("assign") + lpeg.V("loop") +lpeg.V("cond") ) * (white + -1)),
 	let = node(letValue * spc *  ((lpeg.V("typeLet") * ("," * lpeg.V("typeLet"))^0 * spc *"in" * spc * lpeg.V("cmd")^1 *spc* "end"))),
 	typeLet = node(((varValue + constValue) * spc * lpeg.V("id") *spc* "=" * spc* lpeg.V("exp") )  ),
 	fn = node( fnValue * spc * lpeg.V("id") * spc * "(" * spc * ((lpeg.V("id")*spc * ("," *spc* lpeg.V("id"))^0) +(spc) ) * spc * ")"* spc * "=" * spc * lpeg.V("cmd") *spc* "end"),
+	fnRec = node( fnRecValue * fnValue * spc * lpeg.V("id") * spc * "(" * spc * ((lpeg.V("id")*spc * ("," *spc* lpeg.V("id"))^0) +(spc) ) * spc * ")"* spc * "=" * spc * lpeg.V("cmd") *spc* "end"),
 	loop = node(loopValue * spc * lpeg.V("exp") * spc * "do" * spc * (lpeg.V("cmd")^1) ) * spc *"end",
 	assign = node(lpeg.V("id") * igual *lpeg.V("exp")),
 	cond = node(condValue * spc * lpeg.V("exp") * spc * "then" * (spc * (lpeg.V("cmd")^1))^0 * spc * (elseValue * spc * (lpeg.V("cmd")^1))^0 * spc * "end"),
