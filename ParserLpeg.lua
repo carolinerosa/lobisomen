@@ -35,7 +35,7 @@ local valRefValue = white * lpeg.C("&")
 
 --[[regras de fn]]
 local fnValue = white * lpeg.C("fn")
-local fnRecValue = white * lpeg.C("fn")
+local fnRecValue = white * lpeg.C("rec")
 
 
 function typeSum()
@@ -259,22 +259,9 @@ function typeFnRec(left, op, right,...)
 	id= right
     --[[verificar onde termina o abs]]
     local abs={...}	
-    local arg = {}
-	
-        table.insert(arg,abs[1])
     --print("temos x comandos: ", #arg)
-    atual = 2
-	while(atual < (#abs-1)) do
-        
-        
-        table.insert(arg,abs[atual])
-	
-        atual = atual + 1
-        
-	
-    end
-    abs = {"ABS",abs,arg[atual]}
     
+    abs = {"ABS",abs[1],abs[2]}
     
     return{"RBIND",id,  abs}   
 end
