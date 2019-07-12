@@ -39,6 +39,8 @@ loc = require "localization"
 
 local automaton = {}
 
+local TIMER = 0 
+
 
 function tLen(T) --Prasaber o tamanho da tabela | serio nao use  # nao eh deterministico
 	if T == nil then
@@ -1053,15 +1055,19 @@ function automaton.rec(cPile,vPile,env,stor,bLocs)
 
 		return
 	else 
-
+		
 		head = pop(cPile)
 		
 		--O print abaixo eh o que fica sendo ocorrendo a cada interacao 
 		printAutomaton(head,cPile,vPile,env,stor,bLocs)
 
 		stat=getStatement(head) --stat para statement, pois pode  ser operacao ou comando
-		
-		handlers[stat](head,cPile,vPile,env,stor,bLocs)
+
+		TIMER = TIMER + 1 
+
+		if TIMER < 12 then
+			handlers[stat](head,cPile,vPile,env,stor,bLocs)
+		end
  
 	end
 
