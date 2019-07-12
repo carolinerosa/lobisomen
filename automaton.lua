@@ -798,6 +798,8 @@ function handle_DSEQ(head,cPile,vPile,env,stor,bLocs)
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
+--------------------------PARTE 3---------------------------------
+
 function handle_ABS(head,cPile,vPile,env,stor,bLocs)
 	formals = getFirst(head)
 	blk = getSecond(head)
@@ -808,8 +810,6 @@ function handle_ABS(head,cPile,vPile,env,stor,bLocs)
 
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
-
---------------------------PARTE 3---------------------------------
 
 function handle_CALL(head,cPile,vPile,env,stor,bLocs)
 	id = getFirst(head)
@@ -921,21 +921,28 @@ function handle_H_CALL(head,cPile,vPile,env,stor,bLocs)
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
-function unfold(enviroment)--Unfold Recebe uma ENV e retorna uma ENV. {"ENV", {...}} -> {"ENV", {...}}
-	e = getValue(enviroment) --Pegando a  table contendo o  enviroment em si
+function unfold(enviroment)
+	e = getValue(enviroment)
+
+	return reclose(e)
+end
+
+function reclose(e)--Unfold Recebe uma ENV e retorna uma ENV. {"ENV", {...}} -> {"ENV", {...}}
 
 	if tLen(e) == 0 then --recloseₑ(∅) = ∅.
 		return nil
 	elseif tLen(e) > 1 then -- recloseₑ(e₁ ∪ e₂) = recloseₑ(e₁) ∪ recloseₑ(e₂),
 		respENV = {}
+
 		for i,v in pairs(e)do
-			tempENV = getValue(unfold(v))
-			if tLen(tempENV)~= 0 then
-				for index,value in pairs(tempENV)do
-					respENV[index] = value
-				end
-			end
+			tempENV = {[i]=v}
+			tempENV = reclose(tempENV)
+
+			respENV[i] = getValue(tempENV)
 		end
+
+		respENV = {"ENV", respENV} 
+
 		return respENV
 	else
 		for i,v in pairs(e)do --Sempre eh executado apenas uma vez
@@ -958,8 +965,6 @@ function unfold(enviroment)--Unfold Recebe uma ENV e retorna uma ENV. {"ENV", {.
 			end
 
 			return e
-
-			break;
 		end
 	end
 end
@@ -972,7 +977,7 @@ function handle_RBND(head,cPile,vPile,env,stor,bLocs)
 	foldedENV = {"ENV", {[getValue(id)]=closure} }
 
 	unfoldedENV = unfold(foldedENV)
-	push(cPile,unfoldedENV)
+	push(vPile,unfoldedENV)
 
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
@@ -1084,7 +1089,7 @@ function automaton.auto(tree)
 end
 
 FAC = {"BLK",{"BIND",{"ID","z"},{"REF",{"NUM",1}}},
-		{"BLK",{"RBND",{"ID","FAT"},
+		{"BLK",{"BIND",{"ID","FAT"},
 						{"ABS",{"ID","y"},
 							{"BLK",{"BIND",{"ID","x"},{"REF",{"ID","y"}}},
 								{"CSEQ",
@@ -1104,7 +1109,7 @@ FAC = {"BLK",{"BIND",{"ID","z"},{"REF",{"NUM",1}}},
 				{"CALL",{"ID","FAT"},{"NUM",3}}
 		}
 }
---gautomaton.auto(FAC)
+automaton.auto(FAC)
 
 
 return automaton
