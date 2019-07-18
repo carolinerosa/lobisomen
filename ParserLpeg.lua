@@ -396,11 +396,11 @@ end
 local transformImp = lpeg.P({
 	"s",
 	s = impFinal(lpeg.V("cmd")^1),
-	cmd = ((spc * "let" * spc * lpeg.V("fn") )+lpeg.V("let")+ (lpeg.V("call")+lpeg.V("assign") + lpeg.V("loop") +lpeg.V("cond") ) * (white + -1)),
-	let = node(letValue * spc *  ((lpeg.V("typeLet") * ("," * lpeg.V("typeLet") * spc)^0 * spc *"in" * spc * lpeg.V("cmd")^1 *spc* "end"))),
+	cmd = (lpeg.V("let")+ (lpeg.V("call")+lpeg.V("assign") + lpeg.V("loop") +lpeg.V("cond") ) * (white + -1)),
+	let = node(  (letValue * spc * lpeg.V("fn") *  spc * "in" * spc * lpeg.V("cmd")^1 *spc* "end" ) + (letValue * spc *  ((lpeg.V("typeLet") * ("," * lpeg.V("typeLet") * spc)^0 * spc *"in" * spc * lpeg.V("cmd")^1 *spc* "end")))),
 	typeLet = node(((varValue + constValue) * spc * lpeg.V("id") *spc* "=" * spc* lpeg.V("exp") )  ),
 	call = nodeCall(lpeg.V("id") * "(" * lpeg.V("exp") *( ("," *spc *  lpeg.V("exp") * spc)^0+spc) *")"),
-	fn = node( ( (fnRecValue * spc) + spc) * fnValue * spc * lpeg.V("id") * spc * "(" * spc * ((lpeg.V("id")*spc * ("," *spc* lpeg.V("id"))^0) +(spc) ) * spc * ")"* spc * "=" * spc * lpeg.V("cmd") *spc* "end"),
+	fn = node( ( (fnRecValue * spc) + spc) * fnValue * spc * lpeg.V("id") * spc * "(" * spc * ((lpeg.V("id")*spc * ("," *spc* lpeg.V("id"))^0) +(spc) ) * spc * ")"* spc * "=" * spc * lpeg.V("cmd") *spc ),
 	loop = node(loopValue * spc * lpeg.V("exp") * spc * "do" * spc * (lpeg.V("cmd")^1) ) * spc *"end",
 	assign = node(lpeg.V("id") * igual *lpeg.V("exp")),
 	cond = node(condValue * spc * lpeg.V("exp") * spc * "then" * (spc * (lpeg.V("cmd")^1))^0 * spc * (elseValue * spc * (lpeg.V("cmd")^1))^0 * spc * "end"),
@@ -426,3 +426,4 @@ function parse.generator(s)
 end
 
 return parse
+
