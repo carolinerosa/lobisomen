@@ -9,7 +9,6 @@ in
                 y := y - 1
             end
         end
-    in 
-        f(3)
+    in f(3)
     end
 end

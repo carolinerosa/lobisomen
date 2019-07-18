@@ -136,15 +136,21 @@ function printStorEnv(stor,env)
 	print("}")
 	
 	io.write("Stor\t: {")
-	for loce,val in pairs(stor)do
+	for loca,val in pairs(stor)do
+
+
 		if(tLen(locID)==0)then
 			io.write("")
-		elseif (loc <= tLen(env))then
-			if locID[loc] ~= nil then 
-				io.write("[",locID[loce],"]=")
+		elseif (loca <= tLen(env))then
+			if locID[loca] ~= nil then 
+				io.write("[",locID[loca],"]=")
 				tPrint(val)
 				io.write(",")
 			else
+				io.write("[<",loca,">]=")
+				tPrint(val)
+				io.write(",")
+			end
 			--print()
 		end
 	end
@@ -607,6 +613,7 @@ function handle_ID(head,cPile,vPile,env,stor,bLocs)
 	headLoc = getValue(env[idValue])
 
 	headBindded = stor[headLoc] 
+
 	push(vPile,headBindded)
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
@@ -671,6 +678,7 @@ function handle_H_REF(head,cPile,vPile,env,stor,bLocs)
 	push(bLocs,locVar) 				--Atualizando o Bloco de Locations com a locaion nova
 
 	push(vPile,locVar)				--Empilhamos uma Localization na pilhade valores
+
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
@@ -776,7 +784,6 @@ function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)	--LEMBRE o ENV empilha
 	envCopy = {"ENV",tempCopy}
 	push(vPile,envCopy)
 	
-
 	for newId,v in pairs(newEnvValue) do
 		env[newId]=v
 	end
@@ -1180,7 +1187,7 @@ FAC = {"BLK",{"BIND",{"ID","z"},{"REF",{"NUM",1}}},
 
 facrec = {"BLK",{"DSEQ",{"BIND",{"ID","z"},{"REF",{"NUM",1}}},{"BIND",{"ID","f"},{"ABS",{{"ID","x"}},{"BLK",{"BIND",{"ID","y"},{"REF",{"ID","x"}}},{"LOOP",{"NOT",{"EQ",{"ID","y"},{"NUM",0}}},{"CSEQ",{"ASSIGN",{"ID","z"},{"MUL",{"ID", "z"},{"ID", "y"}}},{"ASSIGN",{"ID","y"},{"SUB",{"ID", "y"},{"NUM",1}}}}}}}}},{"CALL",{"ID","f"},{{"NUM",3}}}}
 
-automaton.auto(facrec)
+--automaton.auto(facrec)
 
 
 return automaton
