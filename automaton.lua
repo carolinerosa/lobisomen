@@ -186,6 +186,7 @@ function getLocalization() --por enquanto sempre coloca no final do stor
 end
 
 function getValue(head) --NUM,BOO,ID,LOC
+	
 	category = head[1]
 	--print("ESSA EH A  CATEGORIA PEGA",category)
 	value = head[2]
@@ -597,6 +598,7 @@ function handle_H_COND(head,cPile,vPile,env,stor,bLocs)
 end
 
 function handle_ID(head,cPile,vPile,env,stor,bLocs)
+	
 	idValue = getValue(head)
 	idValue = idValue:gsub("%s", "")
 	
@@ -604,6 +606,7 @@ function handle_ID(head,cPile,vPile,env,stor,bLocs)
 
 	headBindded = stor[headLoc] 
 	push(vPile,headBindded)
+
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
@@ -827,7 +830,7 @@ function handle_ABS(head,cPile,vPile,env,stor,bLocs)
 
 	envCopy = {}
 	for i,v in pairs(env) do envCopy[i] = v end  
-
+	envCopy = {"ENV",envCopy}
 	closure = {"CLOSURE",formals,blk,envCopy}
 
 	push(vPile,closure)
@@ -846,7 +849,7 @@ function handle_CALL(head,cPile,vPile,env,stor,bLocs)
 	for i,x in pairs(actuals) do 
 		push(cPile,x)	
 	end
-
+	
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
@@ -911,6 +914,7 @@ function handle_H_CALL(head,cPile,vPile,env,stor,bLocs)
 	u = getSecond(head)
 
 	closure = env[idValue] --que pode ser apenas Closure ou REC
+	
 	closureType = getStatement(closure)
 
 	formals = getFirst(closure)
@@ -920,6 +924,7 @@ function handle_H_CALL(head,cPile,vPile,env,stor,bLocs)
 	values = {}
 	for i=1,u,1 do
 		values[i] = pop(vPile) --[V₁, V₂, ..., Vᵤ]
+		
 	end 
 
 	--O que precisa ser empilhado em caso de CLOSURE e de REC
@@ -948,11 +953,12 @@ function handle_H_CALL(head,cPile,vPile,env,stor,bLocs)
 
 	if (closureType == "CLOSURE") then
 		--E'= E / E₁ / match(F, [V₁, V₂, ..., Vᵤ])
+		
 		E1 = getValue(closure[4])
-
+		
 		Elinha = overrideTables(E,E1)
 		Elinha = overrideTables(Elinha,matched)
-
+	
 	elseif (closureType == "REC") then -- nao terminado
 		--E' = E / E₁ / unfold(E₂) / match(F, [V₁, V₂, ..., Vᵤ]).
 		E1 = getValue(closure[4])
@@ -965,7 +971,6 @@ function handle_H_CALL(head,cPile,vPile,env,stor,bLocs)
 	else 
 		print("Erro. Esperado um tipo de Closure")
 	end 
-
 	env = Elinha --𝛅(B :: #BLKCMD :: C, E :: V, E', S, L), 
 	
 	automaton.rec(cPile,vPile,env,stor,bLocs)
