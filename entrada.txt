@@ -10,5 +10,5 @@ in
             end
         end
     end
-f(10)
+f(3)
 end

@@ -69,6 +69,30 @@ function push(pile,head)
 	
 end
 
+--[[
+function tPrint (table)
+	tprint(table,0)
+end
+
+function tprint (tbl, indent)
+	if not indent then indent = 0 end
+
+	if type(tbl) == "table" then
+		for k, v in pairs(tbl) do
+			formatting = string.rep("  ", indent) .. k .. ": "
+			if type(v) == "table" then
+			  print(formatting)
+			  tprint(v, indent+1)
+			else
+			  print(formatting .. v)
+			end
+		  end
+	else
+		print("<<",tbl,">>")
+	end
+
+end
+]]
 
 function tPrint(myTable)
 	if myTable==nil then
@@ -91,9 +115,10 @@ function tPrint(myTable)
 		end
 		io.write("}")
 	else 
-		--io.write(myTable)	
+		io.write("<<",myTable,">>")	
 	end
 end
+
 
 function printStorEnv(stor,env)
 	io.write("Env\t: {")
@@ -103,9 +128,9 @@ function printStorEnv(stor,env)
 		io.write("[",id,"]=")
 		tPrint(loc)
 		io.write(",")
-		locID[getValue(loc)]=id
-		
-			
+		if getStatement(loc) == "LOC" then 
+			locID[getValue(loc)]=id
+		end
 	end
 	print("}")
 	
@@ -184,14 +209,13 @@ function getValue(head) --NUM,BOO,ID,LOC
 	elseif category == "LOC" then
 		return value	
 	elseif category == "ENV" then
-		return value  	
+		return value  
 	end
 
 	print("Eh de um tipo nao implementado ou com erro")
 end
 
 function getStatement(head)
-
 	return head[1]
 end
 
@@ -578,7 +602,6 @@ function handle_ID(head,cPile,vPile,env,stor,bLocs)
 	
 	headLoc = getValue(env[idValue])
 
-
 	headBindded = stor[headLoc] 
 	push(vPile,headBindded)
 	automaton.rec(cPile,vPile,env,stor,bLocs)
@@ -749,13 +772,9 @@ function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)	--LEMBRE o ENV empilha
 	envCopy = {"ENV",tempCopy}
 	push(vPile,envCopy)
 	
-	for newId,newValue in pairs(newEnvValue) do
-		env[newId]=newValue
-	end
 
-
-	if(tLen(env)==0) then
-		env = newEnvValue	
+	for newId,v in pairs(newEnvValue) do
+		env[newId]=v
 	end
 
 	automaton.rec(cPile,vPile,env,stor,bLocs)
@@ -806,7 +825,10 @@ function handle_ABS(head,cPile,vPile,env,stor,bLocs)
 	formals = getFirst(head)
 	blk = getSecond(head)
 
-	closure = {"CLOSURE",formals,blk,env}
+	envCopy = {}
+	for i,v in pairs(env) do envCopy[i] = v end  
+
+	closure = {"CLOSURE",formals,blk,envCopy}
 
 	push(vPile,closure)
 
@@ -828,6 +850,8 @@ function handle_CALL(head,cPile,vPile,env,stor,bLocs)
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
+
+--[[
 function match_aux(f,v,e)
 	if (f == {} and v == {})then
 		return e 
@@ -851,6 +875,22 @@ function match(f,v)
 	else
 		return match_aux(f,v,respENV)
 	end
+end]]
+
+function match(f,v)
+	respENV = {}
+	
+	if tLen(f) ~= tLen(v) then
+		return {"ENV",{}}
+	else
+		for index,ID in pairs(f) do 
+			idValue = getValue(ID)
+
+			respENV[idValue] = v[index]
+		end
+			resp = {"ENV",respENV}
+		return resp
+	end
 end
 
 function overrideTables(t1,t2)
@@ -865,6 +905,7 @@ function overrideTables(t1,t2)
 end
 
 function handle_H_CALL(head,cPile,vPile,env,stor,bLocs) 
+
 	id = getFirst(head)
 	idValue = getValue(id)
 	u = getSecond(head)
@@ -873,6 +914,7 @@ function handle_H_CALL(head,cPile,vPile,env,stor,bLocs)
 	closureType = getStatement(closure)
 
 	formals = getFirst(closure)
+
 	block = getSecond(closure)
 	
 	values = {}
@@ -882,7 +924,10 @@ function handle_H_CALL(head,cPile,vPile,env,stor,bLocs)
 
 	--O que precisa ser empilhado em caso de CLOSURE e de REC
 
-	E = env
+	envCopy = {}
+	for i,v in pairs(env) do envCopy[i] = v end  
+
+	E = envCopy
 	E[idValue] = closure   -- E = {I ↦ Closure(F, B, E₁)} ∪ E₂  ou  E = {I ↦ Rec(F, B, E₁, E₂)} ∪ E₃
 	Eformatted = {"ENV",E}
 
@@ -895,6 +940,9 @@ function handle_H_CALL(head,cPile,vPile,env,stor,bLocs)
 	--Criando o novo enviroment E'
 
 	matched = match(formals,values) --match(F, [V₁, V₂, ..., Vᵤ])
+
+
+	--ATEH AQUI PARECE CORRETO
 
 	Elinha = {}
 
@@ -1063,9 +1111,9 @@ function automaton.rec(cPile,vPile,env,stor,bLocs)
 
 		stat=getStatement(head) --stat para statement, pois pode  ser operacao ou comando
 
-		TIMER = TIMER + 1 
+		--TIMER = TIMER + 1 
 
-		if TIMER < 12 then
+		if TIMER < 13 then
 			handlers[stat](head,cPile,vPile,env,stor,bLocs)
 		end
  
@@ -1115,7 +1163,10 @@ FAC = {"BLK",{"BIND",{"ID","z"},{"REF",{"NUM",1}}},
 				{"CALL",{"ID","FAT"},{"NUM",3}}
 		}
 }
-automaton.auto(FAC)
+
+facrec = {"BLK",{"DSEQ",{"BIND",{"ID","z"},{"REF",{"NUM",1}}},{"BIND",{"ID","f"},{"ABS",{{"ID","x"}},{"BLK",{"BIND",{"ID","y"},{"REF",{"ID","x"}}},{"LOOP",{"NOT",{"EQ",{"ID","y"},{"NUM",0}}},{"CSEQ",{"ASSIGN",{"ID","z"},{"MUL",{"ID", "z"},{"ID", "y"}}},{"ASSIGN",{"ID","y"},{"SUB",{"ID", "y"},{"NUM",1}}}}}}}}},{"CALL",{"ID","f"},{{"NUM",3}}}}
+
+automaton.auto(facrec)
 
 
 return automaton
