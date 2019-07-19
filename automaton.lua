@@ -172,14 +172,14 @@ function printAutomaton(head,cPile,vPile,env,stor,bLocs)
 	tPrint(vPile)
 	print("")
 
-	printStorEnv(stor,env)
-	--[[
-	io.write("Env\t: ")
-	tPrint(env)
-	print("")
-	io.write("Stor\t: ")
-	tPrint(stor)
-	print("")]]
+	--printStorEnv(stor,env)
+	
+	io.write("Env\t: {")
+	for i,v in pairs(env) do io.write("[",i,"]->") tPrint(v) print(",") end
+	print("}")
+	io.write("Stor\t: {")
+	for i,v in pairs(stor) do io.write("[",i,"]->") tPrint(v) print(",") end
+	print("}")
 
 	io.write("bLocs\t: ")
 	tPrint(bLocs)
@@ -609,12 +609,19 @@ end
 function handle_ID(head,cPile,vPile,env,stor,bLocs)
 	idValue = getValue(head)
 	idValue = idValue:gsub("%s", "")
-	
-	headLoc = getValue(env[idValue])
 
-	headBindded = stor[headLoc] 
+	coisa = env[idValue]
 
-	push(vPile,headBindded)
+	if getStatement(coisa) == "LOC" then
+		headLoc = getValue(coisa)
+
+		headBindded = stor[headLoc] 
+
+		push(vPile,headBindded)
+	else
+		push(vPile,coisa)
+	end 
+
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
 
@@ -669,12 +676,10 @@ function handle_H_REF(head,cPile,vPile,env,stor,bLocs)
 	locValue = getLocalization()	--valor da location em  si,sendo criado
 	locVar = loc.makeLoc(locValue)	--{"LOC",locValue}, nosso formato de Location
 
-
 	expResp = pop(vPile)			--Pegamos o  resultado da expressao colocada pelo REF
 
 	stor[locValue] = expResp		--E a salvamos na memoria, ligada pela nova location
 	
-
 	push(bLocs,locVar) 				--Atualizando o Bloco de Locations com a locaion nova
 
 	push(vPile,locVar)				--Empilhamos uma Localization na pilhade valores
@@ -734,7 +739,6 @@ function handle_H_BIND(head,cPile,vPile,env,stor,bLocs)
 		push(vPile,H) 						
 		newEnv = {"ENV",{[getValue(id)]=bindable}}
 	else
-
 		--O codigo eh o mesmo que  isso -> H[2][getValue(id)] = bindable  , amas assim eh feio 
 		tempEnv = getValue(H)  				--se ja tem uma ENV ela pega o {"ENV", {...}}, porem como usamos getValue, tamo devolvendo o		
 		tempEnv[getValue(id)] = bindable 	--Atualizamos a table naquela posicao	
@@ -1195,4 +1199,50 @@ return automaton
 
 
 
+--[[
+{{},
+{ENV,{}},
+{{LOC,1}},
+{ENV,{{LOC,1},}},
+{},
+{ENV,{{CLOSURE,{{ID,x}},{BLK,{BIND,{ID,y},{REF,{ID,x}}},{LOOP,{NOT,{EQ,{ID,y},{NUM,0}}},{CSEQ,{ASSIGN,{ID,z},{MUL,{ID, z},{ID, y}}},{ASSIGN,{ID,y},{SUB,{ID, y},{NUM,1}}}}}},{ENV,{{LOC,1},}}},{NUM,3},{LOC,1},}},
+{},
+{LOC,2}}]]
 
+--[[
+{BLK,
+	{BIND,{ID,z},{REF,{NUM,1}}},
+	{BLK,
+		{BIND,{ID,f},
+			{ABS,{{ID,x}},
+				{BLK,
+					{BIND,{ID,y},{REF,{ID,x}}},
+					{LOOP,{NOT,{EQ,{ID,y},{NUM,0}}},
+						{CSEQ,
+							{ASSIGN,{ID,z},{MUL,{ID, z},{ID, y}}},
+							{ASSIGN,{ID,y},{SUB,{ID, y},{NUM,1}}}}}
+				}
+			}
+		},
+		{CALL,{ID,f},{{NUM,3}}}
+	}
+}]]
+
+--[[
+
+let var z = 1
+in 
+    let fn f(x,k,z) =    
+        let var y = x
+        in      
+            while not (y == 0)
+            do 
+                z := z * y
+                y := y - 1
+            end
+        end
+    in f(3,5,7)
+    end
+end
+
+]]
