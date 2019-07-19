@@ -1,4 +1,4 @@
-![alt text](https://imgur.com/a/EObRKRu)
+![alt text](https://imgur.com/RcNxkUO)
 
 # Lobisomen
 Implementação de um compilador da linguagem Imp para Π IR, a linguagem do Π framework.
