@@ -766,6 +766,7 @@ function handle_BLK(head,cPile,vPile,env,stor,bLocs)
 	--Temos que colocar o conteudo do bLocs no vPile, e depois deixa-lo vazio
 	push(vPile,bLocs)
 	bLocs = {}
+
 	
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
@@ -776,8 +777,10 @@ function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)	--LEMBRE o ENV empilha
 	--δ(#BLKDEC :: C, E' :: V, E, S, L) = δ(C, E :: V, E / E', S, L),
 	
 	newEnv = pop(vPile)
+
 	
 	newEnvValue = getValue(newEnv)
+
 
 	tempCopy={}
 
@@ -791,6 +794,7 @@ function handle_H_BLKDEC(head,cPile,vPile,env,stor,bLocs)	--LEMBRE o ENV empilha
 	for newId,v in pairs(newEnvValue) do
 		env[newId]=v
 	end
+
 
 	automaton.rec(cPile,vPile,env,stor,bLocs)
 end
@@ -976,11 +980,11 @@ function handle_H_CALL(head,cPile,vPile,env,stor,bLocs)
 
 	elseif (closureType == "REC") then -- nao terminado
 		--E' = E / E₁ / unfold(E₂) / match(F, [V₁, V₂, ..., Vᵤ]).
-		E1 = getValue(closure[4])
-		E2 = closure[5]
-		unfoldedE2 = getValue(unfold(E2))
+		En1 = getValue(closure[4])
+		En2 = closure[5]
+		unfoldedE2 = getValue(unfold(En2))
 
-		Elinha = overrideTables(E,E1)
+		Elinha = overrideTables(E,En1)
 		Elinha = overrideTables(Elinha,unfoldedE2)
 		Elinha = overrideTables(Elinha,getValue(matched))
 	else 
@@ -1016,6 +1020,11 @@ function reclose(e)--Unfold Recebe uma ENV e retorna uma ENV. {"ENV", {...}} -> 
 
 		return respENV
 	else
+		eCopy={}
+		for i,v in pairs(e) do eCopy[i]=v end
+		tempENV= {"ENV",eCopy} --isso eh o e 
+	
+
 		for i,v in pairs(e)do --Sempre eh executado apenas uma vez
 			closureType = getStatement(v)
 
@@ -1023,19 +1032,25 @@ function reclose(e)--Unfold Recebe uma ENV e retorna uma ENV. {"ENV", {...}} -> 
 				F = v[2]
 				B = v[3]
 				E1 = v[4]
-				
-				e[i]= {"REC",F,B,E1,e}
+
+
+				respENV = {"ENV",{[i]={"REC",F,B,E1,tempENV}}}
+			
+				return respENV
 			elseif closureType == "REC"then --recloseₑ(I ↦ Rec(F, B, E′, E′′)) = (I ↦ Rec(F, B, E′, e)),
 				F = v[2]
 				B = v[3]
 				E1 = v[4]
 
-				e[i]= {"REC",F,B,E1,e} --recloseₑ(I ↦ v) = (I ↦ v) if v ≠ Closure(F, B, E),
+
+				respENV = {"ENV", {[i]={"REC",F,B,E1,tempENV}} }
+
+				return respENV --recloseₑ(I ↦ v) = (I ↦ v) if v ≠ Closure(F, B, E),
 			else
 				--nop
 			end
 
-			return e
+			return tempENV
 		end
 	end
 end
@@ -1046,12 +1061,14 @@ function handle_RBND(head,cPile,vPile,env,stor,bLocs)
 	abs = getSecond(head)
 	envCopy = {}
 	for i,v in pairs(env) do envCopy[i] = v end  
+
 	envCopy = {"ENV",envCopy}
 
 	closure = {"CLOSURE",getFirst(abs),getSecond(abs),envCopy}
 	foldedENV = {"ENV", {[getValue(id)]=closure} }
 
 	unfoldedENV = unfold(foldedENV)
+
 	push(vPile,unfoldedENV)
 
 	automaton.rec(cPile,vPile,env,stor,bLocs)
@@ -1138,7 +1155,7 @@ function automaton.rec(cPile,vPile,env,stor,bLocs)
 
 		--TIMER = TIMER + 1 
 
-		if TIMER < 13 then
+		if TIMER < 20 then
 			handlers[stat](head,cPile,vPile,env,stor,bLocs)
 		end
  
@@ -1167,82 +1184,6 @@ function automaton.auto(tree)
 
 end
 
-FAC = {"BLK",{"BIND",{"ID","z"},{"REF",{"NUM",1}}},
-		{"BLK",{"BIND",{"ID","FAT"},
-						{"ABS",{"ID","y"},
-							{"BLK",{"BIND",{"ID","x"},{"REF",{"ID","y"}}},
-								{"CSEQ",
-									{"COND",{"GT",{"ID","x"},{"NUM",2}},
-											{"ASSIGN",{"ID","z"},
-												{"CALL",{"ID","FAT"},
-													{"SUB",{"ID","x"},{"NUM",1}}
-												}
-											},
-											{"NOP"}
-									},
-									{"ASSIGN",{"ID","x"},{"MUL",{"ID","x"},{"ID","z"}}}
-								}
-							}											
-						}
-				},
-				{"CALL",{"ID","FAT"},{"NUM",3}}
-		}
-}
-
-facrec = {"BLK",{"DSEQ",{"BIND",{"ID","z"},{"REF",{"NUM",1}}},{"BIND",{"ID","f"},{"ABS",{{"ID","x"}},{"BLK",{"BIND",{"ID","y"},{"REF",{"ID","x"}}},{"LOOP",{"NOT",{"EQ",{"ID","y"},{"NUM",0}}},{"CSEQ",{"ASSIGN",{"ID","z"},{"MUL",{"ID", "z"},{"ID", "y"}}},{"ASSIGN",{"ID","y"},{"SUB",{"ID", "y"},{"NUM",1}}}}}}}}},{"CALL",{"ID","f"},{{"NUM",3}}}}
-
---automaton.auto(facrec)
-
-
 return automaton
 
 
-
-
---[[
-{{},
-{ENV,{}},
-{{LOC,1}},
-{ENV,{{LOC,1},}},
-{},
-{ENV,{{CLOSURE,{{ID,x}},{BLK,{BIND,{ID,y},{REF,{ID,x}}},{LOOP,{NOT,{EQ,{ID,y},{NUM,0}}},{CSEQ,{ASSIGN,{ID,z},{MUL,{ID, z},{ID, y}}},{ASSIGN,{ID,y},{SUB,{ID, y},{NUM,1}}}}}},{ENV,{{LOC,1},}}},{NUM,3},{LOC,1},}},
-{},
-{LOC,2}}]]
-
---[[
-{BLK,
-	{BIND,{ID,z},{REF,{NUM,1}}},
-	{BLK,
-		{BIND,{ID,f},
-			{ABS,{{ID,x}},
-				{BLK,
-					{BIND,{ID,y},{REF,{ID,x}}},
-					{LOOP,{NOT,{EQ,{ID,y},{NUM,0}}},
-						{CSEQ,
-							{ASSIGN,{ID,z},{MUL,{ID, z},{ID, y}}},
-							{ASSIGN,{ID,y},{SUB,{ID, y},{NUM,1}}}}}
-				}
-			}
-		},
-		{CALL,{ID,f},{{NUM,3}}}
-	}
-}]]
-
---[[
-
-let var z = 1
-in 
-    let fn f(x,k,z) =    
-        let var y = x
-        in      
-            while not (y == 0)
-            do 
-                z := z * y
-                y := y - 1
-            end
-        end
-    in f(3,5,7)
-    end
-end
-
-]]

@@ -1,14 +1,10 @@
-let var z = 1
-in 
-    let rec fn(y) = 
-        let var x = y
-        in
-            if ( x > 2 )
-                z := fn(x-1)
-            end
-        x := x * z
+let var a = 1
+    in
+    let rec fn fy(x,y,z) = 
+        let var t = 1 
+        in 
+            if z>2 then a:=0 else a:=a+1 f(x,y,a) end
         end
-    in fn(3)
+    in fy(2,4,1)
     end
-end 
-
+end
