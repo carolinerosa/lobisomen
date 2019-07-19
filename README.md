@@ -1,4 +1,4 @@
-![alt text](https://image.freepik.com/free-vector/wolf-background-howling-moon_23-2147645253.jpg)
+![alt text](https://imgur.com/a/EObRKRu)
 
 # Lobisomen
 Implementação de um compilador da linguagem Imp para Π IR, a linguagem do Π framework.
