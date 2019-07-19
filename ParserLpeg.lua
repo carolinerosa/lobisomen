@@ -189,11 +189,11 @@ function typeLet(left, op, right, ...)
 	--print("temos x comandos: ", #arg)
 	
 	
-	if(atual <=#arg and (arg[atual][1]=="BIND" or  arg[atual][1]=="RBIND")) then
+	if(atual <=#arg and (arg[atual][1]=="BIND" or  arg[atual][1]=="RBND")) then
 		--print("e bind", arg[(atual)][1])
 		resp = {"DSEQ",arg[atual-1], arg[atual]} 
 		atual = atual +1
-		while atual<=#arg and (arg[atual][1]=="BIND" or  arg[atual][1]=="RBIND") do
+		while atual<=#arg and (arg[atual][1]=="BIND" or  arg[atual][1]=="RBND") do
 		
 			--print("e bind", arg[(atual)][1], " atual" , atual)
 			resp = {"DSEQ",arg[atual], resp} 
@@ -218,7 +218,7 @@ function typeLet(left, op, right, ...)
 		return { left, resp[1],resp[2]}
 	
 	end
-	if((atual) <#arg and (arg[atual][1]~="BIND" or  arg[atual][1]~="RBIND")) then
+	if((atual) <#arg and (arg[atual][1]~="BIND" or  arg[atual][1]~="RBND")) then
 
 		--print("não e bind", arg[(atual-1)][1])
 		resp = {"CSEQ",arg[atual-1], arg[atual]} 
@@ -271,7 +271,7 @@ function typeFnRec(left, op, right,...)
 	
     abs = {"ABS",abs,absTwo}
     
-    return{"RBIND",id,  abs}   
+    return{"RBND",id,  abs}   
 end
 
 function typeCall(id,...)
