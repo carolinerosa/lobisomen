@@ -611,8 +611,7 @@ function handle_ID(head,cPile,vPile,env,stor,bLocs)
 	idValue = idValue:gsub("%s", "")
 
 	coisa = env[idValue]
-	--print("cooooooooooooisa")
-	--tPrint(coisa)
+
 	if getStatement(coisa) == "LOC" then
 		headLoc = getValue(coisa)
 
@@ -966,7 +965,7 @@ function handle_H_CALL(head,cPile,vPile,env,stor,bLocs)
 
 	matched = match(formals,values) --match(F, [V₁, V₂, ..., Vᵤ])
 
-	--ATEH AQUI PARECE CORRETO
+
 
 	Elinha = {}
 

@@ -1,31 +1,49 @@
-limite:= 5 + 8 + 9
 
-while (limite <= 55) do
-limite:= limite +90
+--------------Recursivo Funcionando-----------
+
+let var a = 1
+    in
+    let rec fn fy(x,y,z) = 
+        let var t = 1 
+        in 
+            if z>2 then a:=0 else a:=a+1 fy(x,y,a) end
+        end
+    in fy(2,4,1)
+    end
 end
 
-input := 103
-if (input > 98) then
-input:= input+10
-else 
-input:= input+ 6
-end
 
-z := 1 
-y := 10 
-while Not (y == 0) do 
-            z := z * y
-            y := y - 1
-end
+--------------Fatorial iterativo-----------
 
-let var z = 1 
+let var z = 1
 in 
-	let var y = 10 
-	in 
-	        while Not (y == 0)
-	        do 
-	            z := z * y
-	            y := y - 1
-		end
-	end
+    let fn f(x) =    
+        let var y = x
+        in      
+            while not (y == 0)
+            do 
+                z := z * y
+                y := y - 1
+            end
+        end
+    in f(10)
+    end
 end
+
+
+--------------Recursivo Fatorial, Nao funcionando-----------
+
+let var z = 1
+in
+    let rec fn fy(y) = 
+        let var x = y 
+        in 
+            if x>2 then fy(x-1) else x :=x end
+	    z := x * z
+        end
+    in fy(3)
+    end
+end
+
+
+
